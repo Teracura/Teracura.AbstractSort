@@ -1,4 +1,5 @@
 ﻿using Shouldly;
+using Teracura.AbstractSort.Logic;
 
 namespace Teracura.AbstractSort.Tests;
 
@@ -56,31 +57,4 @@ public class ReturnTypeTests
         var set = (HashSet<string>)obj!;
         set.Count.ShouldBe(3);
     }
-}
-
-public static class Sorter
-{
-    public static object SortLength<T>(this List<T> list, ReturnType returnType = ReturnType.List)
-    {
-        var sorted = list.OrderBy(item => item?.ToString()?.Length ?? -1)
-            .ThenBy(item => item?.ToString()).ToList();
-        list.Clear();
-        list.AddRange(sorted);
-        return returnType switch
-        {
-            ReturnType.List => sorted,
-            ReturnType.Queue => new Queue<T>(sorted),
-            ReturnType.Stack => new Stack<T>(sorted),
-            ReturnType.HashSet => new HashSet<T>(sorted),
-            _ => throw new ArgumentOutOfRangeException(nameof(returnType), $"Unknown return type: {returnType}")
-        };
-    }
-}
-
-public enum ReturnType
-{
-    List,
-    Queue,
-    Stack,
-    HashSet,
 }
