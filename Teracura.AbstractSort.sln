@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Teracura.AbstractSort.Tests", "Teracura.AbstractSort.Tests\Teracura.AbstractSort.Tests.csproj", "{54D7DE68-E5E0-4563-8326-2B395786A4EB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Teracura.AbstractSort.Logic", "Teracura.AbstractSort.Logic\Teracura.AbstractSort.Logic.csproj", "{472B225B-2DFC-4A42-B82A-3E706C68F251}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{54D7DE68-E5E0-4563-8326-2B395786A4EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{54D7DE68-E5E0-4563-8326-2B395786A4EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{54D7DE68-E5E0-4563-8326-2B395786A4EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{472B225B-2DFC-4A42-B82A-3E706C68F251}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{472B225B-2DFC-4A42-B82A-3E706C68F251}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{472B225B-2DFC-4A42-B82A-3E706C68F251}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{472B225B-2DFC-4A42-B82A-3E706C68F251}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
