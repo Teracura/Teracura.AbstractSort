@@ -45,4 +45,32 @@ public class AscendingTests
         list.SortLength();
         list.ShouldBe([null, 2.3, 00002.3, 3.5, double.NaN, double.E, double.MaxValue, double.MinValue]);
     }
+
+    [Fact]
+    public void Should_Sort_Ascending_Length_Objects()
+    {
+        var obj = new TestClass("Apple", 5, new TestClass2(1));
+        var obj2 = new TestClass("EggPlant", 3, new TestClass2(3));
+        var obj3 = new TestClass("Banana", -1, new TestClass2(5));
+        var obj4 = new TestClass("BombasticSideEye", 10, new TestClass2(4));
+        List<TestClass> list = [obj, obj2, obj3, obj4];
+        list.SortLength("Name");
+        list.ShouldBe([obj, obj3, obj2, obj4]);
+        list.SortLength("Age");
+        list.ShouldBe([obj2, obj, obj3, obj4]);
+        list.SortLength("TestClass2.Number");
+        list.ShouldBe([obj, obj2, obj4, obj3]);
+    }
+
+    public class TestClass(string name, int age, TestClass2 testClass2)
+    {
+        public string Name { get; set; } = name;
+        public int Age { get; set; } = age;
+        public TestClass2 TestClass2 { get; set; } = testClass2;
+    }
+
+    public class TestClass2(int number)
+    {
+        public int Number { get; set; } = number;
+    }
 }
