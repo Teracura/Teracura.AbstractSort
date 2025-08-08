@@ -6,7 +6,7 @@ public class SortConfig<T>
     public bool UseReflectionPath { get; private set; } = true;
     public bool Ascending { get; private set; } = true;
     public bool UsePropertyExpression { get; private set; } = false;
-    public Func<T, object>? ExpressionLambda { get; private set; } = null;
+    public Func<T, object?>? ExpressionLambda { get; private set; } = null;
     public ReturnType ReturnType { get; private set; } = ReturnType.List;
     
 
@@ -18,7 +18,7 @@ public class SortConfig<T>
     {
         private readonly SortConfig<T> _config = new();
 
-        public Builder SetPropertyPath(string path)
+        public Builder SortBy(string path)
         {
             _config.UseReflectionPath = true;
             _config.UsePropertyExpression = false;
@@ -26,7 +26,7 @@ public class SortConfig<T>
             return this;
         }
 
-        public Builder UsePropertyLambda(Func<T, object?> expression)
+        public Builder SortBy(Func<T, object?>? expression)
         {
             _config.UsePropertyExpression = true;
             _config.UseReflectionPath = false;

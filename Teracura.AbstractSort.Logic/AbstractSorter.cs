@@ -2,7 +2,7 @@
 
 public static class AbstractSorter
 {
-    public static object SortLength<T>(this List<T> list, SortConfig<T>? config = null)
+    public static object SortLength<T>(this List<T> list, SortConfig<T> config = null)
     {
         config ??= new SortConfig<T>.Builder().Build();
         var reflectionPath = config.Path;
