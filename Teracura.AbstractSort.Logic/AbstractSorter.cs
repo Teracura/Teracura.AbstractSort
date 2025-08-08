@@ -6,6 +6,21 @@ public static class AbstractSorter
     {
         config ??= new SortConfig.Builder().Build();
         var reflectionPath = config.Path;
+        if (string.IsNullOrEmpty(reflectionPath))
+        {
+            var type = typeof(T);
+            // Allow only primitive types, string, or nullable of those
+            var isValid =
+                type.IsPrimitive ||
+                type == typeof(string) ||
+                (Nullable.GetUnderlyingType(type)?.IsPrimitive ?? false) ||
+                Nullable.GetUnderlyingType(type) == typeof(string);
+            
+            if (!isValid) throw new InvalidOperationException(
+                $"Cannot sort objects of type {type.Name} with default SortConfig. " +
+                $"Use a property path or lambda expression to define a sort key."
+            );
+        }
         var ascending = config.Ascending;
         var returnType = config.ReturnType;
 
@@ -56,7 +71,7 @@ public static class AbstractSorter
             if (current == null) return null;
 
             var prop = current.GetType().GetProperty(part);
-            if (prop == null) return null;
+            if (prop == null) throw new ArgumentException($"Property '{part}' not found on type '{current.GetType().Name}'");
 
             current = prop.GetValue(current);
         }

@@ -65,6 +65,40 @@ public class AscendingTests
         list.ShouldBe([obj, obj2, obj4, obj3]);
     }
 
+    [Fact]
+    public void Should_Throw_Exception_On_Invalid_Property_Path()
+    {
+        var obj = new TestClass("Apple", 5, new TestClass2(1));
+        var obj2 = new TestClass("EggPlant", 3, new TestClass2(3));
+        var obj3 = new TestClass("Banana", -1, new TestClass2(5));
+        var obj4 = new TestClass("BombasticSideEye", 10, new TestClass2(4));
+        List<TestClass> list = [obj, obj2, obj3, obj4];
+        var config = new SortConfig.Builder().SetPropertyPath("Name.Name").Build();
+        Should.Throw<ArgumentException>(() => list.SortLength(config));
+    }
+
+    [Fact]
+    public void Should_Throw_Exception_On_Invalid_Property_Path_2()
+    {
+        var obj = new TestClass("Apple", 5, new TestClass2(1));
+        var obj2 = new TestClass("EggPlant", 3, new TestClass2(3));
+        var obj3 = new TestClass("Banana", -1, new TestClass2(5));
+        var obj4 = new TestClass("BombasticSideEye", 10, new TestClass2(4));
+        List<TestClass> list = [obj, obj2, obj3, obj4];
+        var config = new SortConfig.Builder().SetPropertyPath("Name.Name.Name").Build();
+        Should.Throw<ArgumentException>(() => list.SortLength(config));
+    }
+
+    [Fact]
+    public void Should_Throw_Exception_On_Non_Primitive_Default_Sort()
+    {
+        var obj = new TestClass("Apple", 5, new TestClass2(1));
+        var obj2 = new TestClass("EggPlant", 3, new TestClass2(3));
+        var obj3 = new TestClass("Banana", -1, new TestClass2(5));
+        var obj4 = new TestClass("BombasticSideEye", 10, new TestClass2(4));
+        List<TestClass> list = [obj, obj2, obj3, obj4];
+        Should.Throw<InvalidOperationException>(() => list.SortLength());
+    }
     public class TestClass(string name, int age, TestClass2 testClass2)
     {
         public string Name { get; set; } = name;
