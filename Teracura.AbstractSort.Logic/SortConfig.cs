@@ -26,7 +26,7 @@ public class SortConfig<T>
             return this;
         }
 
-        public Builder UsePropertyLambda(Func<T, object> expression)
+        public Builder UsePropertyLambda(Func<T, object?> expression)
         {
             _config.UsePropertyExpression = true;
             _config.UseReflectionPath = false;

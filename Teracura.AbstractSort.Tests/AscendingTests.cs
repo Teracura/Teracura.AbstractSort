@@ -99,9 +99,92 @@ public class AscendingTests
         List<TestClass> list = [obj, obj2, obj3, obj4];
         Should.Throw<InvalidOperationException>(() => list.SortLength());
     }
-    public class TestClass(string name, int age, TestClass2 testClass2)
+
+    [Fact]
+    public void Should_Sort_Primitive_Lambda_Expression()
     {
-        public string Name { get; set; } = name;
+        List<int> list = [1, 1, 2, 10, 9032, 0, -13];
+        var config = new SortConfig<int>.Builder().UsePropertyLambda(x => x).Build();
+        list.SortLength(config);
+        list.ShouldBe([0, 1, 1, 2, 10, -13, 9032]);
+        List<double?> list2 = [null, double.E, double.MaxValue, double.MinValue, double.NaN, 3.5, 2.3, 00002.3];
+        var config2 = new SortConfig<double?>.Builder().UsePropertyLambda(x => x).Build();
+        list2.SortLength(config2);
+        list2.ShouldBe([null, 2.3, 00002.3, 3.5, double.NaN, double.E, double.MaxValue, double.MinValue]);
+    }
+
+    [Fact]
+    public void Should_Sort_Primitive_Lambda_Expression_With_Path()
+    {
+        List<int> list = [1, 1, 2, 10, 9032, 0, -13];
+        var config = new SortConfig<int>.Builder().SetPropertyPath("Age").UsePropertyLambda(x => x).Build();
+        list.SortLength(config);
+        list.ShouldBe([0, 1, 1, 2, 10, -13, 9032]);
+    }
+
+    [Fact]
+    public void Should_Sort_Class_Based_On_Lambda_Expression_Name()
+    {
+        var obj = new TestClass("Apple", 5, new TestClass2(1));
+        var obj2 = new TestClass("EggPlant", 3, new TestClass2(3));
+        var obj3 = new TestClass("Banana", -1, new TestClass2(5));
+        var obj4 = new TestClass("BombasticSideEye", 10, new TestClass2(4));
+        List<TestClass> list = [obj, obj2, obj3, obj4];
+        var config = new SortConfig<TestClass>.Builder().UsePropertyLambda(x => x.Name).Build();
+        list.SortLength(config);
+        list.ShouldBe([obj, obj3, obj2, obj4]);
+    }
+
+    [Fact]
+    public void Should_Sort_Class_Based_On_Lambda_Expression_Age()
+    {
+        var obj = new TestClass("Apple", 5, new TestClass2(1));
+        var obj2 = new TestClass("EggPlant", 3, new TestClass2(3));
+        var obj3 = new TestClass("Banana", -1, new TestClass2(5));
+        var obj4 = new TestClass("BombasticSideEye", 10, new TestClass2(4));
+        List<TestClass> list = [obj, obj2, obj3, obj4];
+        var config = new SortConfig<TestClass>.Builder().UsePropertyLambda(x => x.Age).Build();
+        var config2 = new SortConfig<TestClass>.Builder().UsePropertyLambda(x => x.Age).SortAscending(false).Build();
+        list.SortLength(config);
+        list.ShouldBe([obj2, obj, obj3, obj4]);
+        list.SortLength(config2);
+        list.ShouldBe([obj4, obj3, obj, obj2]);
+    }
+
+    [Fact]
+    public void Should_Sort_Class_Based_On_Lambda_Expression_TestClass2_Number()
+    {
+        var obj = new TestClass("Apple", 5, new TestClass2(1));
+        var obj2 = new TestClass("EggPlant", 3, new TestClass2(3));
+        var obj3 = new TestClass("Banana", -1, new TestClass2(5));
+        var obj4 = new TestClass("BombasticSideEye", 10, new TestClass2(4));
+        List<TestClass> list = [obj, obj2, obj3, obj4];
+        var config = new SortConfig<TestClass>.Builder().UsePropertyLambda(x => x.TestClass2.Number).Build();
+        config.UsePropertyExpression.ShouldBeTrue();
+        config.UseReflectionPath.ShouldBeFalse();
+        list.SortLength(config);
+        list.ShouldBe([obj, obj2, obj4, obj3]);
+    }
+
+    [Fact]
+    public void Should_Sort_Class_Based_On_Property_Path_TestClass2_Number_With_Lambda_Expression()
+    {
+        var obj = new TestClass("Apple", 5, new TestClass2(1));
+        var obj2 = new TestClass("EggPlant", 3, new TestClass2(3));
+        var obj3 = new TestClass("Banana", -1, new TestClass2(5));
+        var obj4 = new TestClass("BombasticSideEye", 10, new TestClass2(4));
+        List<TestClass?> list = [obj, obj2, obj3, obj4];
+        var config = new SortConfig<TestClass?>.Builder().UsePropertyLambda(x => x).SetPropertyPath("TestClass2.Number")
+            .Build();
+        config.UsePropertyExpression.ShouldBeFalse();
+        config.UseReflectionPath.ShouldBeTrue();
+        list.SortLength(config);
+        list.ShouldBe([obj, obj2, obj4, obj3]);
+    }
+
+    public class TestClass(string? name, int age, TestClass2 testClass2)
+    {
+        public string? Name { get; set; } = name;
         public int Age { get; set; } = age;
         public TestClass2 TestClass2 { get; set; } = testClass2;
     }

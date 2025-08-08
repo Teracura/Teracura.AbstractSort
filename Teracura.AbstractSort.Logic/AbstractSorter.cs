@@ -7,7 +7,8 @@ public static class AbstractSorter
         config ??= new SortConfig<T>.Builder().Build();
         var reflectionPath = config.Path;
         var usePath = config.UseReflectionPath;
-        
+        var usePropertyExpression = config.UsePropertyExpression;
+
         // If path is missing but UsePath is enabled, we validate primitive types
         if (string.IsNullOrEmpty(reflectionPath) && usePath)
         {
@@ -22,6 +23,10 @@ public static class AbstractSorter
         if (usePath)
         {
             sorted = SortByLength(list, reflectionPath);
+        }
+        else if (usePropertyExpression)
+        {
+            sorted = SortByLength(list, config.ExpressionLambda);
         }
 
         if (!ascending) sorted.Reverse();
@@ -59,6 +64,25 @@ public static class AbstractSorter
                     GetPropertyValue(item, propertyPath)?.ToString() ?? "")
                 .ToList();
         return sorted;
+    }
+
+    private static List<T> SortByLength<T>(List<T> list, Func<T, object>? configExpressionLambda)
+    {
+        ArgumentNullException.ThrowIfNull(configExpressionLambda);
+
+        return list
+            .OrderBy(item =>
+            {
+                var value = configExpressionLambda(item);
+                var str = value?.ToString();
+                return str?.Length ?? -1;
+            })
+            .ThenBy(item =>
+            {
+                var value = configExpressionLambda(item);
+                return value?.ToString() ?? "";
+            })
+            .ToList();
     }
 
     private static object ReturnFromType<T>(ReturnType returnType, List<T> sorted)
