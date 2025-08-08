@@ -54,11 +54,14 @@ public class AscendingTests
         var obj3 = new TestClass("Banana", -1, new TestClass2(5));
         var obj4 = new TestClass("BombasticSideEye", 10, new TestClass2(4));
         List<TestClass> list = [obj, obj2, obj3, obj4];
-        list.SortLength("Name");
+        var config = new SortConfig.Builder().SetPropertyPath("Name").Build();
+        var config2 = new SortConfig.Builder().SetPropertyPath("Age").Build();
+        var config3 = new SortConfig.Builder().SetPropertyPath("TestClass2.Number").Build();
+        list.SortLength(config);
         list.ShouldBe([obj, obj3, obj2, obj4]);
-        list.SortLength("Age");
+        list.SortLength(config2);
         list.ShouldBe([obj2, obj, obj3, obj4]);
-        list.SortLength("TestClass2.Number");
+        list.SortLength(config3);
         list.ShouldBe([obj, obj2, obj4, obj3]);
     }
 
