@@ -20,6 +20,9 @@
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=594a9976_002Deb70_002D4df3_002Da43a_002D8baae04b3cd7/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="SortConfigTests" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
     &lt;TestId&gt;xUnit::54D7DE68-E5E0-4563-8326-2B395786A4EB::net9.0::Teracura.AbstractSort.Tests.SortConfigTests&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::54D7DE68-E5E0-4563-8326-2B395786A4EB::net9.0::Teracura.AbstractSort.Tests.ReturnTypeTests&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::54D7DE68-E5E0-4563-8326-2B395786A4EB::net9.0::Teracura.AbstractSort.Tests.AscendingTests&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::54D7DE68-E5E0-4563-8326-2B395786A4EB::net9.0::Teracura.AbstractSort.Tests.DescendingTests&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=93738a2c_002D8e88_002D4746_002Da309_002Dea9e6f041eeb/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="NameHere" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;

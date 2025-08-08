@@ -37,8 +37,7 @@ list.SortLength(); // sorts in-place by string length, then lexicographically
 // list turns to ["fig", "kiwi", "apple","banana"]
 ```
 
-`SortLength()` sorts the original list in-place, and optionally returns a new collection based on the specified
-`ReturnType`
+`list` is sorted in-place, and a separate collection (based on the `ReturnType`) is returned, which does not affect the original list.
 
 <h3>ReturnType</h3>
 <strong>Enum with multiple return types</strong>
@@ -60,33 +59,77 @@ HashSet<double> set = list.SortLength(type); //list turns to [null, 2.3, 2.3, 2.
 
 Note: null is treated as a value of `length: -1` and will **not** throw an exception
 
-Note: `SortLength(input parameters)` sorts based on the **string length** of the property value **then** numeric or natural order. Which means that `-1` is considered longer than `1` in numerical values, while `10` is sorted bigger than `-1` because both are `length: 2` but `10` is numerically larger than `-1`
+Note: `SortLength(input parameters)` sorts based on the **string length** of the property value **then** numeric or
+natural order. Which means that `-1` is considered longer than `1` in numerical values, while `10` is sorted bigger than
+`-1` because both are `length: 2` but `10` is numerically larger than `-1`
+
+### SortConfig
+
+`SortConfig` is a class that uses builder pattern to be initialized, used for more customized sorting
+
+how to initialize:
+
+```csharp
+SortConfig configuration = new SortConfig.Builder().Build(); //for default case
+```
+
+**defaults will have the following datatypes:**
+
+- `string`: ReflectionPath = `""`
+- `bool`: UseReflectionPath = `false`
+- `bool`: Ascending = `true`
+- `ReturnType`: ReturnType = `ReturnType.List`
+
+**SortConfig subclasses:**
+
+- `Builder` builder pattern used to construct the configuration
+
+**Builder Methods**
+
+- `UsePropertyPath(bool usePropertyPath = true)` sets `UseReflectionPath` to given input
+- `SetPropertyPath(string path)` sets `ReflectionPath` to given path and sets `UseReflectionPath` to true
+- `SortAscending(bool ascending = true)` sets `Ascending` to given input
+- `ReturnType(ReturnType type = Logic.ReturnType.List)` sets `ReturnType` to given input
+- `Build()` returns a new `SortConfig` class with the changed datatypes (or default if no datatypes are changed)
 
 <h3>Custom Sorting</h3>
 <strong>Can use reflection to sort based on any primitive value in a class, including a nested classes</strong>
 
 ```csharp
-        //TestClass parameters are (string: Name,int: Age, TestClass2: TestClass2)
-        //TestClass2 parameters are(int: Number)
-        var obj = new TestClass("Apple", 5, new TestClass2(1));
-        var obj2 = new TestClass("EggPlant", 3, new TestClass2(3));
-        var obj3 = new TestClass("Banana", -1, new TestClass2(5));
-        var obj4 = new TestClass("BombasticSideEye", 10, new TestClass2(4));
-        List<TestClass> list = [obj, obj2, obj3, obj4];
-        list.SortLength("Name"); //expected: [obj, obj3, obj2, obj4], sorts by Name parameter
-        list.SortLength("Age"); //expected: [obj2, obj, obj3, obj4]
-        list.SortLength("TestClass2.Number"); //expected [obj, obj2, obj4, obj3]
+//TestClass parameters are (string: Name,int: Age, TestClass2: TestClass2)
+//TestClass2 parameters are(int: Number)
+var obj = new TestClass("Apple", 5, new TestClass2(1));
+var obj2 = new TestClass("EggPlant", 3, new TestClass2(3));
+var obj3 = new TestClass("Banana", -1, new TestClass2(5));
+var obj4 = new TestClass("BombasticSideEye", 10, new TestClass2(4));
+List<TestClass> list = [obj, obj2, obj3, obj4];
+var config = new SortConfig.Builder().SetPropertyPath("Name").Build();
+var config2 = new SortConfig.Builder().SetPropertyPath("Age").Build();
+var config3 = new SortConfig.Builder().SetPropertyPath("TestClass2.Number").Build();
+list.SortLength(config); //expected: [obj, obj3, obj2, obj4], sorts by Name parameter
+list.SortLength(config2); //expected: [obj2, obj, obj3, obj4]
+list.SortLength(config3); //expected [obj, obj2, obj4, obj3]
+       
 ```
 
 <h3>In summary</h3>
 
 - Class: `AbstractSorter`
-  - Method: `SortLength()`
-  - Method: `SortLength(ReturnType: type)`
-  - Method: `SortLength(string: propertyPath)`
-  - Method: `SortLength(string: propertyPath, ReturnType: type)`
+    - Method: `SortLength(SortConfig: config = default)` returns value based on `ReturnType`
 - Enum: `ReturnType`
-  - Values: `List`, `Queue`, `Stack`, `HashSet`
+    - Values: `List`, `Queue`, `Stack`, `HashSet`
+- Class: `SortConfig`
+    - string: `ReflectionPath`
+    - bool: `UsePath`
+    - bool: `Ascending`
+    - Enum: ReturnType: `ReturnType`
+    - Class: Builder:
+      - Method: `UsePropertyPath(bool: usePropertyPath = true)`
+      - Method: `SetPropertyPath(string: path)`
+      - Method: `SortAscending(bool: ascending = true)`
+      - Method: `ReturnType(ReturnType: type = ReturnType.List)`
+      - Method: `Build()` returns `SortConfig`
+
 </details>
 
 

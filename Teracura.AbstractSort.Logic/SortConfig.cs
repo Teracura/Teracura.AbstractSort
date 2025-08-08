@@ -2,10 +2,10 @@
 
 public class SortConfig
 {
-    public string Path { get; set; } = "";
-    public bool UsePath { get; set; } = false;
-    public bool Ascending { get; set; } = true;
-    public ReturnType ReturnType { get; set; } = ReturnType.List;
+    public string Path { get; private set; } = "";
+    public bool UsePath { get; private set; } = false;
+    public bool Ascending { get; private set; } = true;
+    public ReturnType ReturnType { get; private set; } = ReturnType.List;
 
     private SortConfig()
     {
