@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace Teracura.AbstractSort.Logic;
+﻿namespace Teracura.AbstractSort.Logic;
 
 public static class AbstractSorter
 {
@@ -11,7 +9,7 @@ public static class AbstractSorter
         list.AddRange(sorted);
         return ReturnFromType(returnType, sorted);
     }
-    
+
     public static object SortLength<T>(this List<T> list, string? propertyPath)
     {
         var sorted = SortByLength(list, propertyPath);
@@ -33,7 +31,7 @@ public static class AbstractSorter
         var sorted = SortByLength(list, null);
         list.Clear();
         list.AddRange(sorted);
-        return ReturnFromType(ReturnType.List, sorted);   
+        return ReturnFromType(ReturnType.List, sorted);
     }
 
     private static List<T> SortByLength<T>(List<T> list, string? propertyPath)
@@ -53,15 +51,15 @@ public static class AbstractSorter
     private static object ReturnFromType<T>(ReturnType returnType, List<T> sorted)
     {
         return returnType switch
-    {
-        ReturnType.List => sorted,
-        ReturnType.Queue => new Queue<T>(sorted),
-        ReturnType.Stack => new Stack<T>(sorted),
-        ReturnType.HashSet => new HashSet<T>(sorted),
-        _ => throw new ArgumentOutOfRangeException(nameof(returnType), $"Unknown return type: {returnType}")
-    };
+        {
+            ReturnType.List => sorted,
+            ReturnType.Queue => new Queue<T>(sorted),
+            ReturnType.Stack => new Stack<T>(sorted),
+            ReturnType.HashSet => new HashSet<T>(sorted),
+            _ => throw new ArgumentOutOfRangeException(nameof(returnType), $"Unknown return type: {returnType}")
+        };
     }
-    
+
     private static object? GetPropertyValue(object? obj, string propertyPath)
     {
         if (obj == null) return null;
