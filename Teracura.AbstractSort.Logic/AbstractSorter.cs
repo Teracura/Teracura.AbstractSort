@@ -2,35 +2,49 @@
 
 public static class AbstractSorter
 {
-    public static object SortLength<T>(this List<T> list, SortConfig? config = null)
+    public static object SortLength<T>(this List<T> list, SortConfig<T>? config = null)
     {
-        config ??= new SortConfig.Builder().Build();
+        config ??= new SortConfig<T>.Builder().Build();
         var reflectionPath = config.Path;
-        if (string.IsNullOrEmpty(reflectionPath))
+        var usePath = config.UseReflectionPath;
+        
+        // If path is missing but UsePath is enabled, we validate primitive types
+        if (string.IsNullOrEmpty(reflectionPath) && usePath)
         {
             var type = typeof(T);
             // Allow only primitive types, string, or nullable of those
-            var isValid =
-                type.IsPrimitive ||
-                type == typeof(string) ||
-                (Nullable.GetUnderlyingType(type)?.IsPrimitive ?? false) ||
-                Nullable.GetUnderlyingType(type) == typeof(string);
-            
-            if (!isValid) throw new InvalidOperationException(
-                $"Cannot sort objects of type {type.Name} with default SortConfig. " +
-                $"Use a property path or lambda expression to define a sort key."
-            );
+            CheckForPrimitiveValue(type);
         }
+
         var ascending = config.Ascending;
         var returnType = config.ReturnType;
+        List<T> sorted = null!; //all null cases will be handled
+        if (usePath)
+        {
+            sorted = SortByLength(list, reflectionPath);
+        }
 
-        var sorted = SortByLength(list, reflectionPath);
         if (!ascending) sorted.Reverse();
 
         list.Clear();
         list.AddRange(sorted);
 
         return ReturnFromType(returnType, sorted);
+    }
+
+    private static void CheckForPrimitiveValue(Type type)
+    {
+        var isValid =
+            type.IsPrimitive ||
+            type == typeof(string) ||
+            (Nullable.GetUnderlyingType(type)?.IsPrimitive ?? false) ||
+            Nullable.GetUnderlyingType(type) == typeof(string);
+
+        if (!isValid)
+            throw new InvalidOperationException(
+                $"Cannot sort objects of type {type.Name} with default SortConfig. " +
+                $"Use a property path or lambda expression to define a sort key."
+            );
     }
 
     private static List<T> SortByLength<T>(List<T> list, string? propertyPath)
@@ -71,7 +85,8 @@ public static class AbstractSorter
             if (current == null) return null;
 
             var prop = current.GetType().GetProperty(part);
-            if (prop == null) throw new ArgumentException($"Property '{part}' not found on type '{current.GetType().Name}'");
+            if (prop == null)
+                throw new ArgumentException($"Property '{part}' not found on type '{current.GetType().Name}'");
 
             current = prop.GetValue(current);
         }
