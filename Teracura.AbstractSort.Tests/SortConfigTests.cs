@@ -10,7 +10,7 @@ public class SortConfigTests
     public void Should_Default_Values()
     {
         var config = new SortConfig<int>.Builder().Build();
-        config.Path.ShouldBe("");
+        config.ReflectionPaths.ShouldBe([]);
         config.UseReflectionPath.ShouldBeTrue();
         config.UsePropertyExpression.ShouldBeFalse();
         config.Ascending.ShouldBeTrue();
@@ -37,7 +37,7 @@ public class SortConfigTests
         var config = new SortConfig<int>.Builder().SortBy(path).Build();
         config.UseReflectionPath.ShouldBeTrue();
         config.UsePropertyExpression.ShouldBeFalse();
-        config.Path.ShouldBe(path);
+        config.ReflectionPaths.ShouldBe([path]);
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public class SortConfigTests
         var config = new SortConfig<int>.Builder().SortBy(path).SortAscending(false).Build();
         config.UseReflectionPath.ShouldBeTrue();
         config.UsePropertyExpression.ShouldBeFalse();
-        config.Path.ShouldBe(path);
+        config.ReflectionPaths.ShouldBe([path]);
         config.Ascending.ShouldBeFalse();
         config.ReturnType.ShouldBe(ReturnType.List); //default;
     }
@@ -60,7 +60,7 @@ public class SortConfigTests
             .Build();
         config.UseReflectionPath.ShouldBeTrue();
         config.UsePropertyExpression.ShouldBeFalse();
-        config.Path.ShouldBe(path);
+        config.ReflectionPaths.ShouldBe([path]);
         config.ReturnType.ShouldBe(ReturnType.Queue);
         config.Ascending.ShouldBeTrue();
     }
@@ -73,7 +73,7 @@ public class SortConfigTests
             .SortAscending(false).Build();
         config.UseReflectionPath.ShouldBeTrue();
         config.UsePropertyExpression.ShouldBeFalse();
-        config.Path.ShouldBe(path);
+        config.ReflectionPaths.ShouldBe([path]);
         config.ReturnType.ShouldBe(ReturnType.Queue);
         config.Ascending.ShouldBeFalse();
     }
@@ -92,7 +92,7 @@ public class SortConfigTests
         var config = new SortConfig<int>.Builder().SortBy("Name").SortBy(x => x).Build();
         config.UseReflectionPath.ShouldBeFalse();
         config.UsePropertyExpression.ShouldBeTrue();
-        config.Path.ShouldBe("Name");
+        config.ReflectionPaths.ShouldBe(["Name"]);
     }
 
     [Fact]
@@ -102,7 +102,7 @@ public class SortConfigTests
             .SortAscending(false).Build();
         config.UseReflectionPath.ShouldBeFalse();
         config.UsePropertyExpression.ShouldBeTrue();
-        config.Path.ShouldBe("Name");
+        config.ReflectionPaths.ShouldBe(["Name"]);
         config.Ascending.ShouldBeFalse();
         config.ReturnType.ShouldBe(ReturnType.List); //default;
     }
@@ -114,7 +114,7 @@ public class SortConfigTests
             .ReturnType(ReturnType.Queue).Build();
         config.UseReflectionPath.ShouldBeFalse();
         config.UsePropertyExpression.ShouldBeTrue();
-        config.Path.ShouldBe("Name");
+        config.ReflectionPaths.ShouldBe(["Name"]);
         config.ReturnType.ShouldBe(ReturnType.Queue);
         config.Ascending.ShouldBeTrue();
     }

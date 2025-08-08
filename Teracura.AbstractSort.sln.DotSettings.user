@@ -36,5 +36,6 @@
     &lt;TestId&gt;xUnit::54D7DE68-E5E0-4563-8326-2B395786A4EB::net9.0::Teracura.AbstractSort.Tests.ReturnTypeTests&lt;/TestId&gt;&#xD;
     &lt;TestId&gt;xUnit::54D7DE68-E5E0-4563-8326-2B395786A4EB::net9.0::Teracura.AbstractSort.Tests.DescendingTests&lt;/TestId&gt;&#xD;
     &lt;TestId&gt;xUnit::54D7DE68-E5E0-4563-8326-2B395786A4EB::net9.0::Teracura.AbstractSort.Tests.SortConfigTests&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::54D7DE68-E5E0-4563-8326-2B395786A4EB::net9.0::Teracura.AbstractSort.Tests.MultiLevelSortTests&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

@@ -2,34 +2,28 @@
 
 public static class AbstractSorter
 {
-    public static object SortLength<T>(this List<T> list, SortConfig<T> config = null)
+    public static object SortLength<T>(this List<T> list, SortConfig<T>? config = null)
     {
         config ??= new SortConfig<T>.Builder().Build();
-        var reflectionPath = config.Path;
+
         var usePath = config.UseReflectionPath;
-        var usePropertyExpression = config.UsePropertyExpression;
-
-        // If path is missing but UsePath is enabled, we validate primitive types
-        if (string.IsNullOrEmpty(reflectionPath) && usePath)
-        {
-            var type = typeof(T);
-            // Allow only primitive types, string, or nullable of those
-            CheckForPrimitiveValue(type);
-        }
-
+        var useLambda = config.UsePropertyExpression;
         var ascending = config.Ascending;
         var returnType = config.ReturnType;
-        List<T> sorted = null!; //all null cases will be handled
+
+        List<T> sorted = null!;
+
         if (usePath)
         {
-            sorted = SortByLength(list, reflectionPath);
+            sorted = SortByLengthReflection(list, config.ReflectionPaths);
         }
-        else if (usePropertyExpression)
+        else if (useLambda)
         {
-            sorted = SortByLength(list, config.ExpressionLambda);
+            sorted = SortByLengthLambda(list, config.LambdaSelectors);
         }
 
-        if (!ascending) sorted.Reverse();
+        if (!ascending)
+            sorted.Reverse();
 
         list.Clear();
         list.AddRange(sorted);
@@ -52,37 +46,76 @@ public static class AbstractSorter
             );
     }
 
-    private static List<T> SortByLength<T>(List<T> list, string? propertyPath)
+    private static List<T> SortByLengthReflection<T>(List<T> list, List<string> propertyPaths)
     {
-        var sorted = string.IsNullOrEmpty(propertyPath)
-            ? list.OrderBy(item => item?.ToString()?.Length ?? -1)
-                .ThenBy(item => item?.ToString())
-                .ToList()
-            : list.OrderBy(item =>
-                    GetPropertyValue(item, propertyPath)?.ToString()?.Length ?? -1)
-                .ThenBy(item =>
-                    GetPropertyValue(item, propertyPath)?.ToString() ?? "")
+        if (propertyPaths.Count == 0)
+        {
+            CheckForPrimitiveValue(typeof(T));
+            return list.OrderBy(x => x?.ToString()?.Length ?? -1)
+                .ThenBy(x => x?.ToString())
                 .ToList();
-        return sorted;
+        }
+
+        var ordered = list.OrderBy(x =>
+        {
+            var value = GetPropertyValue(x, propertyPaths[0]);
+            return value?.ToString()?.Length ?? -1;
+        }).ThenBy(x =>
+        {
+            var value = GetPropertyValue(x, propertyPaths[0]);
+            return value?.ToString() ?? "";
+        });
+
+        for (var i = 1; i < propertyPaths.Count; i++)
+        {
+            var path = propertyPaths[i];
+            ordered = ordered.ThenBy(x =>
+            {
+                var value = GetPropertyValue(x, path);
+                return value?.ToString()?.Length ?? -1;
+            }).ThenBy(x =>
+            {
+                var value = GetPropertyValue(x, path);
+                return value?.ToString() ?? "";
+            });
+        }
+
+        return ordered.ToList();
     }
 
-    private static List<T> SortByLength<T>(List<T> list, Func<T, object>? configExpressionLambda)
+    private static List<T> SortByLengthLambda<T>(List<T> list, List<Func<T, object?>?> selectors)
     {
-        ArgumentNullException.ThrowIfNull(configExpressionLambda);
+        if (selectors.Count == 0 || selectors[0] == null)
+            throw new ArgumentException("At least one lambda selector must be provided");
 
-        return list
-            .OrderBy(item =>
+        var first = selectors[0]!;
+        var ordered = list.OrderBy(x =>
+        {
+            var value = first(x);
+            return value?.ToString()?.Length ?? -1;
+        }).ThenBy(x =>
+        {
+            var value = first(x);
+            return value?.ToString() ?? "";
+        });
+
+        for (var i = 1; i < selectors.Count; i++)
+        {
+            var sel = selectors[i];
+            if (sel == null) continue;
+
+            ordered = ordered.ThenBy(x =>
             {
-                var value = configExpressionLambda(item);
-                var str = value?.ToString();
-                return str?.Length ?? -1;
-            })
-            .ThenBy(item =>
+                var value = sel(x);
+                return value?.ToString()?.Length ?? -1;
+            }).ThenBy(x =>
             {
-                var value = configExpressionLambda(item);
+                var value = sel(x);
                 return value?.ToString() ?? "";
-            })
-            .ToList();
+            });
+        }
+
+        return ordered.ToList();
     }
 
     private static object ReturnFromType<T>(ReturnType returnType, List<T> sorted)
