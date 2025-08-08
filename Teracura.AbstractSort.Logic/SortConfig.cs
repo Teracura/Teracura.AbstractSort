@@ -17,7 +17,7 @@ public class SortConfig<T>
     public class Builder
     {
         private readonly SortConfig<T> _config = new();
-        private bool _usedSortBy = false;
+        private bool _usedSortBy;
 
         public Builder SortBy(string path)
         {

@@ -37,7 +37,8 @@ list.SortLength(); // sorts in-place by string length, then lexicographically
 // list turns to ["fig", "kiwi", "apple","banana"]
 ```
 
-`list` is sorted in-place, and a separate collection (based on the `ReturnType`) is returned, which does not affect the original list.
+`list` is sorted in-place, and a separate collection (based on the `ReturnType`) is returned, which does not affect the
+original list.
 
 <h3>ReturnType</h3>
 <strong>Enum with multiple return types</strong>
@@ -75,8 +76,10 @@ SortConfig configuration = new SortConfig.Builder().Build(); //for default case
 
 **defaults will have the following datatypes:**
 
-- `string`: ReflectionPath = `""`
-- `bool`: UseReflectionPath = `false`
+- `List<string?>`: ReflectionPaths = `[]`
+- `List<Func<T,object?>?>`: LambdaSelectors = `[]`
+- `bool`: UseReflectionPath = `true`
+- `bool`: UsePropertyExpression = `false`
 - `bool`: Ascending = `true`
 - `ReturnType`: ReturnType = `ReturnType.List`
 
@@ -86,14 +89,19 @@ SortConfig configuration = new SortConfig.Builder().Build(); //for default case
 
 **Builder Methods**
 
-- `UsePropertyPath(bool usePropertyPath = true)` sets `UseReflectionPath` to given input
-- `SetPropertyPath(string path)` sets `ReflectionPath` to given path and sets `UseReflectionPath` to true
+- `SortBy(string path)` sets first value of `ReflectionPaths` to the given path and sets `UseReflectionPath` to `true` and
+  the rest of the sort types to `false`
+- `SortBy(Func<T,object?>? expression)` sets `LambaSelectors` to given lambda expression and sets
+  `UsePropertyExpression` to `true` and the rest of the sort types to `false`
+- `ThenBy(string path)` adds the given path to `Reflection paths`. Only works when `SortBy(string path)` is invoked first
+- `ThenBy(Func<T,object?>?) expression` adds given lambda expression to `LambdaSelectors`. only works when
+  `SortBy(Func<T,object?>? expression)` is invoked first
 - `SortAscending(bool ascending = true)` sets `Ascending` to given input
 - `ReturnType(ReturnType type = Logic.ReturnType.List)` sets `ReturnType` to given input
 - `Build()` returns a new `SortConfig` class with the changed datatypes (or default if no datatypes are changed)
 
 <h3>Custom Sorting</h3>
-<strong>Can use reflection to sort based on any primitive value in a class, including a nested classes</strong>
+**Can use reflection to sort based on any primitive value in an object, including nested classes**
 
 ```csharp
 //TestClass parameters are (string: Name,int: Age, TestClass2: TestClass2)
@@ -109,8 +117,56 @@ var config3 = new SortConfig.Builder().SetPropertyPath("TestClass2.Number").Buil
 list.SortLength(config); //expected: [obj, obj3, obj2, obj4], sorts by Name parameter
 list.SortLength(config2); //expected: [obj2, obj, obj3, obj4]
 list.SortLength(config3); //expected [obj, obj2, obj4, obj3]
-       
 ```
+
+**Can also use Lambda expressions to sort based on any primitive value in an object, including nested classes**
+
+```csharp
+var obj = new TestClass("Apple", 5, new TestClass2(1));
+var obj2 = new TestClass("EggPlant", 3, new TestClass2(3));
+var obj3 = new TestClass("Banana", -1, new TestClass2(5));
+var obj4 = new TestClass("BombasticSideEye", 10, new TestClass2(4));
+List<TestClass> list = [obj, obj2, obj3, obj4];
+var config = new SortConfig<TestClass>.Builder().SortBy(x => x.Name).Build();
+list.SortLength(config); //expected: [obj, obj3, obj2, obj4]
+```
+
+**Can also chain Lambda expressions or reflection paths using ThenBy in SortConfig, but you cannot combine both methods
+**
+
+```csharp
+var obj = new Person { Name = "Alice", Title = "Engineer", Age = 30 };
+var obj2 = new Person { Name = "Bob", Title = "Manager", Age = 25 };
+var obj3 = new Person { Name = "Charlie", Title = "Engineer", Age = 35 };
+var obj4 = new Person { Name = "Alice", Title = "Analyst", Age = 28 };
+List<Person> list = [obj, obj2, obj3, obj4];
+
+var config = new SortConfig<Person>.Builder()
+    .SortBy("Title")
+    .ThenBy("Age")
+    .Build();
+var sorted = list.SortLength(config); //expected [obj4, obj2, obj, obj3]
+```
+
+or in case of lambda
+
+```csharp
+var obj = new Person { Name = "Alice", Title = "Engineer", Age = 30 };
+var obj2 = new Person { Name = "Bob", Title = "Manager", Age = 25 };
+var obj3 = new Person { Name = "Charlie", Title = "Engineer", Age = 35 };
+var obj4 = new Person { Name = "Alice", Title = "Analyst", Age = 28 };
+List<Person> list = [obj, obj2, obj3, obj4];
+
+var config = new SortConfig<Person>.Builder()
+    .SortBy(p => p.Name)
+    .ThenBy(p => p.Title)
+    .Build();
+var sorted = list.SortLength(config); //expected [obj4, obj2, obj, obj3]
+```
+Notes:
+- You may chain as much sorting conditions as you want with ThenBy, you are not limited to one
+- You cannot use a lambda expression on SortBy then use string reflections on ThenBy, you will receive an exception, and vise-versa
+- While you are allowed to pass an empty string (or none at all) to string reflection, it will sort as usual only for primitive values, while for non-primitive values you will receive an exception (Null is still accepted, as well as string)
 
 <h3>In summary</h3>
 
@@ -124,11 +180,13 @@ list.SortLength(config3); //expected [obj, obj2, obj4, obj3]
     - bool: `Ascending`
     - Enum: ReturnType: `ReturnType`
     - Class: Builder:
-      - Method: `UsePropertyPath(bool: usePropertyPath = true)`
-      - Method: `SetPropertyPath(string: path)`
-      - Method: `SortAscending(bool: ascending = true)`
-      - Method: `ReturnType(ReturnType: type = ReturnType.List)`
-      - Method: `Build()` returns `SortConfig`
+        - Method: `SortBy(string: path)`
+        - Method: `SortBy(Func<T,object?>?: expression)`
+        - Method: `ThenBy(string: path)`
+        - Method: `ThenBy(Func<T,object?>?: expression)`
+        - Method: `SortAscending(bool: ascending = true)`
+        - Method: `ReturnType(ReturnType: type = ReturnType.List)`
+        - Method: `Build()` returns `SortConfig`
 
 </details>
 
