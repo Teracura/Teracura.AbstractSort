@@ -2,36 +2,20 @@
 
 public static class AbstractSorter
 {
-    public static object SortLength<T>(this List<T> list, ReturnType returnType, string? propertyPath)
+    public static object SortLength<T>(this List<T> list, SortConfig? config = null)
     {
-        var sorted = SortByLength(list, propertyPath);
+        config ??= new SortConfig.Builder().Build();
+        var reflectionPath = config.Path;
+        var ascending = config.Ascending;
+        var returnType = config.ReturnType;
+
+        var sorted = SortByLength(list, reflectionPath);
+        if (!ascending) sorted.Reverse();
+
         list.Clear();
         list.AddRange(sorted);
+
         return ReturnFromType(returnType, sorted);
-    }
-
-    public static object SortLength<T>(this List<T> list, string? propertyPath)
-    {
-        var sorted = SortByLength(list, propertyPath);
-        list.Clear();
-        list.AddRange(sorted);
-        return ReturnFromType(ReturnType.List, sorted);
-    }
-
-    public static object SortLength<T>(this List<T> list, ReturnType returnType)
-    {
-        var sorted = SortByLength(list, null);
-        list.Clear();
-        list.AddRange(sorted);
-        return ReturnFromType(returnType, sorted);
-    }
-
-    public static object SortLength<T>(this List<T> list)
-    {
-        var sorted = SortByLength(list, null);
-        list.Clear();
-        list.AddRange(sorted);
-        return ReturnFromType(ReturnType.List, sorted);
     }
 
     private static List<T> SortByLength<T>(List<T> list, string? propertyPath)
