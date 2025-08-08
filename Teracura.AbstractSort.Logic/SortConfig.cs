@@ -1,11 +1,14 @@
 ﻿namespace Teracura.AbstractSort.Logic;
 
-public class SortConfig
+public class SortConfig<T>
 {
     public string Path { get; private set; } = "";
-    public bool UsePath { get; private set; } = false;
+    public bool UseReflectionPath { get; private set; } = true;
     public bool Ascending { get; private set; } = true;
+    public bool UsePropertyExpression { get; private set; } = false;
+    public Func<T, object?>? ExpressionLambda { get; private set; } = null;
     public ReturnType ReturnType { get; private set; } = ReturnType.List;
+    
 
     private SortConfig()
     {
@@ -13,20 +16,23 @@ public class SortConfig
 
     public class Builder
     {
-        private readonly SortConfig _config = new();
+        private readonly SortConfig<T> _config = new();
 
-        public Builder UsePropertyPath(bool usePropertyPath = true)
+        public Builder SortBy(string path)
         {
-            _config.UsePath = usePropertyPath;
-            return this;
-        }
-
-        public Builder SetPropertyPath(string path)
-        {
+            _config.UseReflectionPath = true;
+            _config.UsePropertyExpression = false;
             _config.Path = path;
             return this;
         }
 
+        public Builder SortBy(Func<T, object?>? expression)
+        {
+            _config.UsePropertyExpression = true;
+            _config.UseReflectionPath = false;
+            _config.ExpressionLambda = expression;
+            return this;
+        }
         public Builder SortAscending(bool ascending = true)
         {
             _config.Ascending = ascending;
@@ -39,7 +45,7 @@ public class SortConfig
             return this;
         }
 
-        public SortConfig Build()
+        public SortConfig<T> Build()
         {
             return _config;
         }

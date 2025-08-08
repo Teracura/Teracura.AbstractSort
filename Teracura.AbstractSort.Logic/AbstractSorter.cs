@@ -2,20 +2,54 @@
 
 public static class AbstractSorter
 {
-    public static object SortLength<T>(this List<T> list, SortConfig? config = null)
+    public static object SortLength<T>(this List<T> list, SortConfig<T> config = null)
     {
-        config ??= new SortConfig.Builder().Build();
+        config ??= new SortConfig<T>.Builder().Build();
         var reflectionPath = config.Path;
+        var usePath = config.UseReflectionPath;
+        var usePropertyExpression = config.UsePropertyExpression;
+
+        // If path is missing but UsePath is enabled, we validate primitive types
+        if (string.IsNullOrEmpty(reflectionPath) && usePath)
+        {
+            var type = typeof(T);
+            // Allow only primitive types, string, or nullable of those
+            CheckForPrimitiveValue(type);
+        }
+
         var ascending = config.Ascending;
         var returnType = config.ReturnType;
+        List<T> sorted = null!; //all null cases will be handled
+        if (usePath)
+        {
+            sorted = SortByLength(list, reflectionPath);
+        }
+        else if (usePropertyExpression)
+        {
+            sorted = SortByLength(list, config.ExpressionLambda);
+        }
 
-        var sorted = SortByLength(list, reflectionPath);
         if (!ascending) sorted.Reverse();
 
         list.Clear();
         list.AddRange(sorted);
 
         return ReturnFromType(returnType, sorted);
+    }
+
+    private static void CheckForPrimitiveValue(Type type)
+    {
+        var isValid =
+            type.IsPrimitive ||
+            type == typeof(string) ||
+            (Nullable.GetUnderlyingType(type)?.IsPrimitive ?? false) ||
+            Nullable.GetUnderlyingType(type) == typeof(string);
+
+        if (!isValid)
+            throw new InvalidOperationException(
+                $"Cannot sort objects of type {type.Name} with default SortConfig. " +
+                $"Use a property path or lambda expression to define a sort key."
+            );
     }
 
     private static List<T> SortByLength<T>(List<T> list, string? propertyPath)
@@ -30,6 +64,25 @@ public static class AbstractSorter
                     GetPropertyValue(item, propertyPath)?.ToString() ?? "")
                 .ToList();
         return sorted;
+    }
+
+    private static List<T> SortByLength<T>(List<T> list, Func<T, object>? configExpressionLambda)
+    {
+        ArgumentNullException.ThrowIfNull(configExpressionLambda);
+
+        return list
+            .OrderBy(item =>
+            {
+                var value = configExpressionLambda(item);
+                var str = value?.ToString();
+                return str?.Length ?? -1;
+            })
+            .ThenBy(item =>
+            {
+                var value = configExpressionLambda(item);
+                return value?.ToString() ?? "";
+            })
+            .ToList();
     }
 
     private static object ReturnFromType<T>(ReturnType returnType, List<T> sorted)
@@ -56,7 +109,8 @@ public static class AbstractSorter
             if (current == null) return null;
 
             var prop = current.GetType().GetProperty(part);
-            if (prop == null) return null;
+            if (prop == null)
+                throw new ArgumentException($"Property '{part}' not found on type '{current.GetType().Name}'");
 
             current = prop.GetValue(current);
         }
