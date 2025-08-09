@@ -18,44 +18,65 @@ internal static class SortingUtils
                 $"Use a property path or lambda expression to define a sort key."
             );
     }
-    
-    internal static List<T> SortByLengthReflection<T>(List<T> list, List<string> propertyPaths)
+
+    private static IOrderedEnumerable<T> OrderByLengthThenAlpha<T>( //alpha standing for alphanumerical
+        IEnumerable<T> list,
+        Func<T, object?> selector, bool caseSensitive)
     {
-        if (propertyPaths.Count == 0)
-        {
-            CheckForPrimitiveValue(typeof(T));
-            return list.OrderBy(x => x?.ToString()?.Length ?? -1)
-                .ThenBy(x => x?.ToString())
-                .ToList();
-        }
+        return list
+            .OrderBy(x => selector(x)?.ToString()?.Length ?? -1)
+            .ThenBy(x => selector(x)?.ToString() ?? "",
+                caseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase);
+    }
 
-        var ordered = list.OrderBy(x =>
-        {
-            var value = GetPropertyValue(x, propertyPaths[0]);
-            return value?.ToString()?.Length ?? -1;
-        }).ThenBy(x =>
-        {
-            var value = GetPropertyValue(x, propertyPaths[0]);
-            return value?.ToString() ?? "";
-        });
+    private static IOrderedEnumerable<T> ThenByLengthThenAlpha<T>(IOrderedEnumerable<T> ordered,
+        Func<T, object?> selector, bool caseSensitive)
+    {
+        return ordered
+            .ThenBy(x => selector(x)?.ToString()?.Length ?? -1)
+            .ThenBy(x => selector(x)?.ToString() ?? "",
+                caseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase);
+    }
 
-        for (var i = 1; i < propertyPaths.Count; i++)
+    internal static List<T> SortByLength<T>(List<T> list, SortConfig<T> config)
+    {
+        var caseSensitive = config.CaseSensitive;
+        var selectors = config.SortingMethod switch
         {
-            var path = propertyPaths[i];
-            ordered = ordered.ThenBy(x =>
-            {
-                var value = GetPropertyValue(x, path);
-                return value?.ToString()?.Length ?? -1;
-            }).ThenBy(x =>
-            {
-                var value = GetPropertyValue(x, path);
-                return value?.ToString() ?? "";
-            });
+            SortingMethods.Lambda => config.LambdaSelectors,
+            SortingMethods.Reflection => BuildReflectionSelectors(list, config),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        if (selectors.Count == 0 || selectors[0] == null)
+            throw new ArgumentException("No selectors provided to sort based on");
+
+        var ordered = OrderByLengthThenAlpha(list, selectors[0]!, caseSensitive);
+
+        for (var i = 1; i < selectors.Count; i++)
+        {
+            var sel = selectors[i];
+            if (sel != null)
+                ordered = ThenByLengthThenAlpha(ordered, sel, caseSensitive);
         }
 
         return ordered.ToList();
     }
-    
+
+    private static List<Func<T, object?>?> BuildReflectionSelectors<T>(List<T> list, SortConfig<T> config)
+    {
+        if (config.ReflectionPaths.Count != 0)
+            return config.ReflectionPaths
+                .Select(path => (Func<T, object?>)(x => GetPropertyValue(x, path)))
+                .Cast<Func<T, object?>?>()
+                .ToList();
+        {
+            // No property paths provided — allow sorting only for primitive types
+            CheckForPrimitiveValue(typeof(T));
+            return [x => x];
+        }
+    }
+
     private static object? GetPropertyValue(object? obj, string propertyPath)
     {
         if (obj == null) return null;
@@ -76,7 +97,7 @@ internal static class SortingUtils
 
         return current;
     }
-    
+
     internal static object ReturnFromType<T>(ReturnType returnType, List<T> sorted)
     {
         return returnType switch
@@ -85,42 +106,8 @@ internal static class SortingUtils
             ReturnType.Queue => new Queue<T>(sorted),
             ReturnType.Stack => new Stack<T>(sorted),
             ReturnType.HashSet => new HashSet<T>(sorted),
-            _ => throw new ArgumentOutOfRangeException(nameof(returnType), $"Unknown return type: {returnType}")
+            _ => throw new ArgumentOutOfRangeException(nameof(returnType),
+                $"Unknown return type: {returnType}")
         };
-    }
-    
-    internal static List<T> SortByLengthLambda<T>(List<T> list, List<Func<T, object?>?> selectors)
-    {
-        if (selectors.Count == 0 || selectors[0] == null)
-            throw new ArgumentException("At least one lambda selector must be provided");
-
-        var first = selectors[0]!;
-        var ordered = list.OrderBy(x =>
-        {
-            var value = first(x);
-            return value?.ToString()?.Length ?? -1;
-        }).ThenBy(x =>
-        {
-            var value = first(x);
-            return value?.ToString() ?? "";
-        });
-
-        for (var i = 1; i < selectors.Count; i++)
-        {
-            var sel = selectors[i];
-            if (sel == null) continue;
-
-            ordered = ordered.ThenBy(x =>
-            {
-                var value = sel(x);
-                return value?.ToString()?.Length ?? -1;
-            }).ThenBy(x =>
-            {
-                var value = sel(x);
-                return value?.ToString() ?? "";
-            });
-        }
-
-        return ordered.ToList();
     }
 }

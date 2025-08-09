@@ -13,8 +13,8 @@ public static class AbstractSorter
 
         var sorted = config.SortingMethod switch
         {
-            SortingMethods.Reflection => SortingUtils.SortByLengthReflection(list, config.ReflectionPaths),
-            SortingMethods.Lambda => SortingUtils.SortByLengthLambda(list, config.LambdaSelectors),
+            SortingMethods.Reflection => SortingUtils.SortByLength(list, config),
+            SortingMethods.Lambda => SortingUtils.SortByLength(list, config),
             _ => throw new ArgumentOutOfRangeException($"SortingMethod {config.SortingMethod}", "Not supported yet")
         };
 

@@ -65,7 +65,7 @@ public class MultiLevelSortTests
 
         var config = new SortConfig<Person>.Builder()
             .SortBy(p => p.Name).ThenBy(p => p.Age)
-            .SortAscending(false)
+            .Ascending(false)
             .Build();
 
         var sorted = list.SortLength(config);

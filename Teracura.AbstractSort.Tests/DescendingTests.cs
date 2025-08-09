@@ -10,7 +10,7 @@ public class DescendingTests
     [Fact]
     public void Should_Sort_Config_Descending_Queue()
     {
-        var config = new SortConfig<int>.Builder().SortAscending(false).ReturnType(ReturnType.Queue).Build();
+        var config = new SortConfig<int>.Builder().Ascending(false).ReturnType(ReturnType.Queue).Build();
         config.Ascending.ShouldBeFalse();
         config.ReturnType.ShouldBe(ReturnType.Queue);
         List<int> list = [1, 2, 3, 4, 5, 6, 9, 8, 7, 10];
@@ -22,7 +22,7 @@ public class DescendingTests
     [Fact]
     public void Should_Sort_Config_Descending_HashSet()
     {
-        var config = new SortConfig<int>.Builder().SortAscending(false).ReturnType(ReturnType.HashSet).Build();
+        var config = new SortConfig<int>.Builder().Ascending(false).ReturnType(ReturnType.HashSet).Build();
         config.Ascending.ShouldBeFalse();
         config.ReturnType.ShouldBe(ReturnType.HashSet);
         List<int> list = [1, 2, 3, 4, 5, 6, 9, 8, 7, 10];
@@ -34,7 +34,7 @@ public class DescendingTests
     [Fact]
     public void Should_Sort_Config_Descending_Stack()
     {
-        var config = new SortConfig<int>.Builder().SortAscending(false).ReturnType(ReturnType.Stack).Build();
+        var config = new SortConfig<int>.Builder().Ascending(false).ReturnType(ReturnType.Stack).Build();
         config.Ascending.ShouldBeFalse();
         config.ReturnType.ShouldBe(ReturnType.Stack);
         List<int> list = [1, 2, 3, 4, 5, 6, 9, 8, 7, 10];

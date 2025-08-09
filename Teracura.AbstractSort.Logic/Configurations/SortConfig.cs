@@ -6,6 +6,7 @@ public class SortConfig<T>
     public List<Func<T, object?>?> LambdaSelectors { get; private set; } = [];
     public SortingMethods SortingMethod { get; private set; } = SortingMethods.Reflection;
     public bool Ascending { get; private set; } = true;
+    public bool CaseSensitive { get; private set; } = true;
     public ReturnType ReturnType { get; private set; } = ReturnType.List;
 
 
@@ -79,9 +80,15 @@ public class SortConfig<T>
             return this;
         }
 
-        public Builder SortAscending(bool ascending = true)
+        public Builder Ascending(bool ascending = true)
         {
             _config.Ascending = ascending;
+            return this;
+        }
+
+        public Builder CaseSensitive(bool caseSensitive = true)
+        {
+            _config.CaseSensitive = caseSensitive;
             return this;
         }
 
