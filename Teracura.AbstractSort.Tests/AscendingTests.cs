@@ -1,5 +1,7 @@
 ﻿using Shouldly;
 using Teracura.AbstractSort.Logic;
+using Teracura.AbstractSort.Logic.Configurations;
+using Teracura.AbstractSort.Logic.Sorting;
 
 namespace Teracura.AbstractSort.Tests;
 
@@ -157,8 +159,7 @@ public class AscendingTests
         var obj4 = new TestClass("BombasticSideEye", 10, new TestClass2(4));
         List<TestClass> list = [obj, obj2, obj3, obj4];
         var config = new SortConfig<TestClass>.Builder().SortBy(x => x.TestClass2.Number).Build();
-        config.UsePropertyExpression.ShouldBeTrue();
-        config.UseReflectionPath.ShouldBeFalse();
+        config.SortingMethod.ShouldBe(SortingMethods.Lambda);
         list.SortLength(config);
         list.ShouldBe([obj, obj2, obj4, obj3]);
     }
@@ -173,8 +174,7 @@ public class AscendingTests
         List<TestClass?> list = [obj, obj2, obj3, obj4];
         var config = new SortConfig<TestClass?>.Builder().SortBy(x => x).SortBy("TestClass2.Number")
             .Build();
-        config.UsePropertyExpression.ShouldBeFalse();
-        config.UseReflectionPath.ShouldBeTrue();
+        config.SortingMethod.ShouldBe(SortingMethods.Reflection);
         list.SortLength(config);
         list.ShouldBe([obj, obj2, obj4, obj3]);
     }

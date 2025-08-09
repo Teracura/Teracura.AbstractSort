@@ -1,5 +1,6 @@
 ﻿using Shouldly;
 using Teracura.AbstractSort.Logic;
+using Teracura.AbstractSort.Logic.Configurations;
 
 namespace Teracura.AbstractSort.Tests;
 
@@ -11,8 +12,7 @@ public class SortConfigTests
     {
         var config = new SortConfig<int>.Builder().Build();
         config.ReflectionPaths.ShouldBe([]);
-        config.UseReflectionPath.ShouldBeTrue();
-        config.UsePropertyExpression.ShouldBeFalse();
+        config.SortingMethod.ShouldBe(SortingMethods.Reflection);
         config.Ascending.ShouldBeTrue();
     }
 
@@ -27,7 +27,7 @@ public class SortConfigTests
     public void Should_Use_Property_Path()
     {
         var config = new SortConfig<int>.Builder().Build();
-        config.UseReflectionPath.ShouldBeTrue();
+        config.SortingMethod.ShouldBe(SortingMethods.Reflection);
     }
 
     [Fact]
@@ -35,8 +35,7 @@ public class SortConfigTests
     {
         const string path = "Name";
         var config = new SortConfig<int>.Builder().SortBy(path).Build();
-        config.UseReflectionPath.ShouldBeTrue();
-        config.UsePropertyExpression.ShouldBeFalse();
+        config.SortingMethod.ShouldBe(SortingMethods.Reflection);
         config.ReflectionPaths.ShouldBe([path]);
     }
 
@@ -45,8 +44,7 @@ public class SortConfigTests
     {
         const string path = "Name";
         var config = new SortConfig<int>.Builder().SortBy(path).SortAscending(false).Build();
-        config.UseReflectionPath.ShouldBeTrue();
-        config.UsePropertyExpression.ShouldBeFalse();
+        config.SortingMethod.ShouldBe(SortingMethods.Reflection);
         config.ReflectionPaths.ShouldBe([path]);
         config.Ascending.ShouldBeFalse();
         config.ReturnType.ShouldBe(ReturnType.List); //default;
@@ -58,8 +56,7 @@ public class SortConfigTests
         const string path = "Name";
         var config = new SortConfig<int>.Builder().SortBy(path).ReturnType(ReturnType.Queue)
             .Build();
-        config.UseReflectionPath.ShouldBeTrue();
-        config.UsePropertyExpression.ShouldBeFalse();
+        config.SortingMethod.ShouldBe(SortingMethods.Reflection);
         config.ReflectionPaths.ShouldBe([path]);
         config.ReturnType.ShouldBe(ReturnType.Queue);
         config.Ascending.ShouldBeTrue();
@@ -71,8 +68,7 @@ public class SortConfigTests
         const string path = "Name";
         var config = new SortConfig<int>.Builder().SortBy(path).ReturnType(ReturnType.Queue)
             .SortAscending(false).Build();
-        config.UseReflectionPath.ShouldBeTrue();
-        config.UsePropertyExpression.ShouldBeFalse();
+        config.SortingMethod.ShouldBe(SortingMethods.Reflection);
         config.ReflectionPaths.ShouldBe([path]);
         config.ReturnType.ShouldBe(ReturnType.Queue);
         config.Ascending.ShouldBeFalse();
@@ -82,16 +78,14 @@ public class SortConfigTests
     public void Should_Use_Property_Expression()
     {
         var config = new SortConfig<int>.Builder().SortBy(x => x).Build();
-        config.UseReflectionPath.ShouldBeFalse();
-        config.UsePropertyExpression.ShouldBeTrue();
+        config.SortingMethod.ShouldBe(SortingMethods.Lambda);
     }
 
     [Fact]
     public void Should_Use_Property_Expression_With_Path()
     {
         var config = new SortConfig<int>.Builder().SortBy("Name").SortBy(x => x).Build();
-        config.UseReflectionPath.ShouldBeFalse();
-        config.UsePropertyExpression.ShouldBeTrue();
+        config.SortingMethod.ShouldBe(SortingMethods.Lambda);
         config.ReflectionPaths.ShouldBe(["Name"]);
     }
 
@@ -100,20 +94,18 @@ public class SortConfigTests
     {
         var config = new SortConfig<int>.Builder().SortBy("Name").SortBy(x => x)
             .SortAscending(false).Build();
-        config.UseReflectionPath.ShouldBeFalse();
-        config.UsePropertyExpression.ShouldBeTrue();
+        config.SortingMethod.ShouldBe(SortingMethods.Lambda);
         config.ReflectionPaths.ShouldBe(["Name"]);
         config.Ascending.ShouldBeFalse();
         config.ReturnType.ShouldBe(ReturnType.List); //default;
     }
-    
+
     [Fact]
     public void Should_Use_Property_Expression_With_Path_And_ReturnType()
     {
         var config = new SortConfig<int>.Builder().SortBy("Name").SortBy(x => x)
             .ReturnType(ReturnType.Queue).Build();
-        config.UseReflectionPath.ShouldBeFalse();
-        config.UsePropertyExpression.ShouldBeTrue();
+        config.SortingMethod.ShouldBe(SortingMethods.Lambda);
         config.ReflectionPaths.ShouldBe(["Name"]);
         config.ReturnType.ShouldBe(ReturnType.Queue);
         config.Ascending.ShouldBeTrue();

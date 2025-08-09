@@ -1,36 +1,9 @@
-﻿namespace Teracura.AbstractSort.Logic;
+﻿using Teracura.AbstractSort.Logic.Configurations;
 
-public static class AbstractSorter
+namespace Teracura.AbstractSort.Logic.Sorting;
+
+internal static class SortingUtils
 {
-    public static object SortLength<T>(this List<T> list, SortConfig<T>? config = null)
-    {
-        config ??= new SortConfig<T>.Builder().Build();
-
-        var usePath = config.UseReflectionPath;
-        var useLambda = config.UsePropertyExpression;
-        var ascending = config.Ascending;
-        var returnType = config.ReturnType;
-
-        List<T> sorted = null!;
-
-        if (usePath)
-        {
-            sorted = SortByLengthReflection(list, config.ReflectionPaths);
-        }
-        else if (useLambda)
-        {
-            sorted = SortByLengthLambda(list, config.LambdaSelectors);
-        }
-
-        if (!ascending)
-            sorted.Reverse();
-
-        list.Clear();
-        list.AddRange(sorted);
-
-        return ReturnFromType(returnType, sorted);
-    }
-
     private static void CheckForPrimitiveValue(Type type)
     {
         var isValid =
@@ -45,8 +18,8 @@ public static class AbstractSorter
                 $"Use a property path or lambda expression to define a sort key."
             );
     }
-
-    private static List<T> SortByLengthReflection<T>(List<T> list, List<string> propertyPaths)
+    
+    internal static List<T> SortByLengthReflection<T>(List<T> list, List<string> propertyPaths)
     {
         if (propertyPaths.Count == 0)
         {
@@ -82,8 +55,41 @@ public static class AbstractSorter
 
         return ordered.ToList();
     }
+    
+    private static object? GetPropertyValue(object? obj, string propertyPath)
+    {
+        if (obj == null) return null;
 
-    private static List<T> SortByLengthLambda<T>(List<T> list, List<Func<T, object?>?> selectors)
+        var parts = propertyPath.Split('.');
+        var current = obj;
+
+        foreach (var part in parts)
+        {
+            if (current == null) return null;
+
+            var prop = current.GetType().GetProperty(part);
+            if (prop == null)
+                throw new ArgumentException($"Property '{part}' not found on type '{current.GetType().Name}'");
+
+            current = prop.GetValue(current);
+        }
+
+        return current;
+    }
+    
+    internal static object ReturnFromType<T>(ReturnType returnType, List<T> sorted)
+    {
+        return returnType switch
+        {
+            ReturnType.List => sorted,
+            ReturnType.Queue => new Queue<T>(sorted),
+            ReturnType.Stack => new Stack<T>(sorted),
+            ReturnType.HashSet => new HashSet<T>(sorted),
+            _ => throw new ArgumentOutOfRangeException(nameof(returnType), $"Unknown return type: {returnType}")
+        };
+    }
+    
+    internal static List<T> SortByLengthLambda<T>(List<T> list, List<Func<T, object?>?> selectors)
     {
         if (selectors.Count == 0 || selectors[0] == null)
             throw new ArgumentException("At least one lambda selector must be provided");
@@ -116,38 +122,5 @@ public static class AbstractSorter
         }
 
         return ordered.ToList();
-    }
-
-    private static object ReturnFromType<T>(ReturnType returnType, List<T> sorted)
-    {
-        return returnType switch
-        {
-            ReturnType.List => sorted,
-            ReturnType.Queue => new Queue<T>(sorted),
-            ReturnType.Stack => new Stack<T>(sorted),
-            ReturnType.HashSet => new HashSet<T>(sorted),
-            _ => throw new ArgumentOutOfRangeException(nameof(returnType), $"Unknown return type: {returnType}")
-        };
-    }
-
-    private static object? GetPropertyValue(object? obj, string propertyPath)
-    {
-        if (obj == null) return null;
-
-        var parts = propertyPath.Split('.');
-        var current = obj;
-
-        foreach (var part in parts)
-        {
-            if (current == null) return null;
-
-            var prop = current.GetType().GetProperty(part);
-            if (prop == null)
-                throw new ArgumentException($"Property '{part}' not found on type '{current.GetType().Name}'");
-
-            current = prop.GetValue(current);
-        }
-
-        return current;
     }
 }

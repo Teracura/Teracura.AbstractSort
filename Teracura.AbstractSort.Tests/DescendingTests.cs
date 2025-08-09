@@ -1,5 +1,7 @@
 ﻿using Shouldly;
 using Teracura.AbstractSort.Logic;
+using Teracura.AbstractSort.Logic.Configurations;
+using Teracura.AbstractSort.Logic.Sorting;
 
 namespace Teracura.AbstractSort.Tests;
 
