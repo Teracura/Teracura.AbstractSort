@@ -4,9 +4,29 @@ namespace Teracura.AbstractSort.Logic.Sorting;
 
 public static class AbstractSorter
 {
-    public static object SortLength<T>(this List<T> list, SortConfig<T>? config = null)
+
+    public static object Sort<T>(this List<T> list, SortConfig<T> config)
     {
-        config ??= new SortConfig<T>.Builder().Build();
+        return config.SortMode switch
+        {
+            SortMode.Length => SortLength(list, config),
+            SortMode.Version => SortVersion(list, config),
+            _ => SortDefault(list, config)
+        };
+    }
+
+    private static object SortDefault<T>(List<T> list, SortConfig<T> config)
+    {
+        throw new NotImplementedException();
+    }
+
+    private static object SortVersion<T>(List<T> list, SortConfig<T> config)
+    {
+        throw new NotImplementedException();
+    }
+
+    private static object SortLength<T>(this List<T> list, SortConfig<T> config)
+    {
 
         var ascending = config.Ascending;
         var returnType = config.ReturnType;

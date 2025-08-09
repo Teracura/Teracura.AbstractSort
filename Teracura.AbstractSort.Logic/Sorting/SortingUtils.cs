@@ -66,15 +66,16 @@ internal static class SortingUtils
     private static List<Func<T, object?>?> BuildReflectionSelectors<T>(List<T> list, SortConfig<T> config)
     {
         if (config.ReflectionPaths.Count != 0)
+        {
             return config.ReflectionPaths
                 .Select(path => (Func<T, object?>)(x => GetPropertyValue(x, path)))
                 .Cast<Func<T, object?>?>()
                 .ToList();
-        {
-            // No property paths provided — allow sorting only for primitive types
-            CheckForPrimitiveValue(typeof(T));
-            return [x => x];
         }
+
+        // No property paths provided — allow sorting only for primitive types
+        CheckForPrimitiveValue(typeof(T));
+        return [x => x];
     }
 
     private static object? GetPropertyValue(object? obj, string propertyPath)

@@ -5,6 +5,7 @@ public class SortConfig<T>
     public List<string> ReflectionPaths { get; private set; } = [];
     public List<Func<T, object?>?> LambdaSelectors { get; private set; } = [];
     public SortingMethods SortingMethod { get; private set; } = SortingMethods.Reflection;
+    public SortMode SortMode { get; private set; } = SortMode.None;
     public bool Ascending { get; private set; } = true;
     public bool CaseSensitive { get; private set; } = true;
     public ReturnType ReturnType { get; private set; } = ReturnType.List;
@@ -77,6 +78,12 @@ public class SortConfig<T>
             }
 
             _config.LambdaSelectors.Add(expression);
+            return this;
+        }
+
+        public Builder Mode(SortMode mode)
+        {
+            _config.SortMode = mode;
             return this;
         }
 

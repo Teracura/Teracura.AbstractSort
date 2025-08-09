@@ -28,9 +28,10 @@ public class MultiLevelSortTests
         var config = new SortConfig<Person>.Builder()
             .SortBy(p => p.Name)
             .ThenBy(p => p.Title)
+            .Mode(SortMode.Length)
             .Build();
 
-        var sorted = (List<Person>)list.SortLength(config);
+        var sorted = (List<Person>)list.Sort(config);
 
         sorted.ShouldBe([obj2, obj4, obj, obj3]);
     }
@@ -47,9 +48,10 @@ public class MultiLevelSortTests
         var config = new SortConfig<Person>.Builder()
             .SortBy("Title")
             .ThenBy("Age")
+            .Mode(SortMode.Length)
             .Build();
 
-        var sorted = (List<Person>)list.SortLength(config);
+        var sorted = (List<Person>)list.Sort(config);
 
         sorted.ShouldBe([obj4, obj2, obj, obj3]);
     }
@@ -66,9 +68,10 @@ public class MultiLevelSortTests
         var config = new SortConfig<Person>.Builder()
             .SortBy(p => p.Name).ThenBy(p => p.Age)
             .Ascending(false)
+            .Mode(SortMode.Length)
             .Build();
 
-        var sorted = list.SortLength(config);
+        var sorted = list.Sort(config);
 
         list.ShouldBe([obj3, obj, obj4, obj2]);
     }
@@ -85,9 +88,10 @@ public class MultiLevelSortTests
         var config = new SortConfig<Person>.Builder()
             .SortBy("Name").ThenBy("Age")
             .ReturnType(ReturnType.Queue)
+            .Mode(SortMode.Length)
             .Build();
 
-        var sorted = list.SortLength(config);
+        var sorted = list.Sort(config);
         list.ShouldBe([obj2, obj4, obj, obj3]);
         sorted.ShouldBeOfType<Queue<Person>>();
     }
@@ -99,7 +103,7 @@ public class MultiLevelSortTests
 
         var config = new SortConfig<string>.Builder().Build();
 
-        var sorted = (List<string>)list.SortLength(config);
+        var sorted = (List<string>)list.Sort(config);
 
         sorted.ShouldBe(["c", "z", "aaa", "bbbb"]);
     }
