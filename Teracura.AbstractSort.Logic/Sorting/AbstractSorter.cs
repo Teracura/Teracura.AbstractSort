@@ -4,33 +4,62 @@ namespace Teracura.AbstractSort.Logic.Sorting;
 
 public static class AbstractSorter
 {
-
     public static object Sort<T>(this List<T> list, SortConfig<T> config)
     {
-        return config.SortMode switch
+        var sorted = config.SortMode switch
         {
             SortMode.Length => SortLength(list, config),
             SortMode.Version => SortVersion(list, config),
             _ => SortDefault(list, config)
         };
+
+        if (!config.Ascending)
+            sorted.Reverse();
+        if (config.MutateOriginal)
+        {
+            list.Clear();
+            list.AddRange(sorted);
+        }
+
+        return SortingUtils.ReturnFromType(config.ReturnType, sorted);
     }
 
-    private static object SortDefault<T>(List<T> list, SortConfig<T> config)
+    private static List<T> SortDefault<T>(List<T> list, SortConfig<T> config)
     {
-        throw new NotImplementedException();
+        list.Sort();
+        return list;
     }
 
-    private static object SortVersion<T>(List<T> list, SortConfig<T> config)
+    private static List<T> SortVersion<T>(List<T> list, SortConfig<T> config)
     {
-        throw new NotImplementedException();
+        if (typeof(T) != typeof(string))
+            throw new ArgumentException("Sorting by version only supports strings");
+
+        IOrderedEnumerable<string>? ordered = null;
+
+        // Find the maximum number of parts in any version
+        var maxParts = list.Cast<string>()
+            .Max(v => v.Split('.').Length);
+
+        for (var i = 0; i < maxParts; i++)
+        {
+            var partIndex = i;
+            if (ordered == null)
+            {
+                ordered = list.Cast<string>()
+                    .OrderBy(v => SortingUtils.GetPartValue(v, partIndex));
+            }
+            else
+            {
+                ordered = ordered.ThenBy(v => SortingUtils.GetPartValue(v, partIndex));
+            }
+        }
+
+        return ordered!.Cast<T>().ToList();
     }
 
-    private static object SortLength<T>(this List<T> list, SortConfig<T> config)
+    private static List<T> SortLength<T>(this List<T> list, SortConfig<T> config)
     {
-
-        var ascending = config.Ascending;
-        var returnType = config.ReturnType;
-
         var sorted = config.SortingMethod switch
         {
             SortingMethods.Reflection => SortingUtils.SortByLength(list, config),
@@ -38,12 +67,6 @@ public static class AbstractSorter
             _ => throw new ArgumentOutOfRangeException($"SortingMethod {config.SortingMethod}", "Not supported yet")
         };
 
-        if (!ascending)
-            sorted.Reverse();
-
-        list.Clear();
-        list.AddRange(sorted);
-
-        return SortingUtils.ReturnFromType(returnType, sorted);
+        return sorted;
     }
 }

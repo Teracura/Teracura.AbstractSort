@@ -111,4 +111,12 @@ internal static class SortingUtils
                 $"Unknown return type: {returnType}")
         };
     }
+
+    internal static int GetPartValue(string version, int index)
+    {
+        var parts = version.Split('.');
+        if (index < parts.Length && int.TryParse(parts[index], out var value))
+            return value;
+        return 0; // Treat missing parts as 0
+    }
 }

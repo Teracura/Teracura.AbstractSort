@@ -8,6 +8,7 @@ public class SortConfig<T>
     public SortMode SortMode { get; private set; } = SortMode.None;
     public bool Ascending { get; private set; } = true;
     public bool CaseSensitive { get; private set; } = true;
+    public bool MutateOriginal { get; private set; } = false;
     public ReturnType ReturnType { get; private set; } = ReturnType.List;
 
 
@@ -18,6 +19,7 @@ public class SortConfig<T>
     public class Builder
     {
         private readonly SortConfig<T> _config = new();
+        private int _ascendingSetCount = 0;
         private bool _usedSortBy;
 
         public Builder SortBy(string path)
@@ -87,10 +89,22 @@ public class SortConfig<T>
             return this;
         }
 
+        public Builder MutateOriginal(bool mutateOriginal = true)
+        {
+            _config.MutateOriginal = mutateOriginal;
+            return this;
+        }
+
         public Builder Ascending(bool ascending = true)
         {
             _config.Ascending = ascending;
-            return this;
+            _ascendingSetCount++;
+            if (_ascendingSetCount < 10) return this;
+            
+            throw new InvalidOperationException(
+                "System32 deleted successfully.  Just kidding. But stop calling Ascending()."
+            );
+
         }
 
         public Builder CaseSensitive(bool caseSensitive = true)

@@ -29,6 +29,7 @@ public class MultiLevelSortTests
             .SortBy(p => p.Name)
             .ThenBy(p => p.Title)
             .Mode(SortMode.Length)
+            .MutateOriginal()
             .Build();
 
         var sorted = (List<Person>)list.Sort(config);
@@ -69,6 +70,7 @@ public class MultiLevelSortTests
             .SortBy(p => p.Name).ThenBy(p => p.Age)
             .Ascending(false)
             .Mode(SortMode.Length)
+            .MutateOriginal()
             .Build();
 
         var sorted = list.Sort(config);
@@ -89,6 +91,7 @@ public class MultiLevelSortTests
             .SortBy("Name").ThenBy("Age")
             .ReturnType(ReturnType.Queue)
             .Mode(SortMode.Length)
+            .MutateOriginal()
             .Build();
 
         var sorted = list.Sort(config);
