@@ -102,7 +102,7 @@ public class SortConfig<T>
             if (_ascendingSetCount < 10) return this;
             
             throw new InvalidOperationException(
-                "System32 deleted successfully.  Just kidding. But stop calling Ascending()."
+                "System32 deleted successfully. Just kidding. But stop calling Ascending()."
             );
 
         }

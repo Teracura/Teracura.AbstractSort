@@ -63,7 +63,7 @@ internal static class SortingUtils
         return ordered.ToList();
     }
 
-    private static List<Func<T, object?>?> BuildReflectionSelectors<T>(List<T> list, SortConfig<T> config)
+    internal static List<Func<T, object?>?> BuildReflectionSelectors<T>(List<T> list, SortConfig<T> config)
     {
         if (config.ReflectionPaths.Count != 0)
         {
