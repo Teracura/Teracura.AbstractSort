@@ -1,4 +1,4 @@
-﻿namespace Teracura.AbstractSort.Logic;
+﻿namespace Teracura.AbstractSort.Logic.Configurations;
 
 public enum ReturnType
 {

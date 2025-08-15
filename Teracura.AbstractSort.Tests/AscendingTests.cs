@@ -1,5 +1,7 @@
 ﻿using Shouldly;
 using Teracura.AbstractSort.Logic;
+using Teracura.AbstractSort.Logic.Configurations;
+using Teracura.AbstractSort.Logic.Sorting;
 
 namespace Teracura.AbstractSort.Tests;
 
@@ -17,16 +19,17 @@ public class AscendingTests
     public void Should_Sort_Ascending_Length_Strings()
     {
         List<string> list = ["Apple", "EggPlant", "Banana", "BombasticSideEye"];
-        list.SortLength();
+        var config = new SortConfig<string>.Builder().MutateOriginal().Mode(SortMode.Length).Build();
+        list.Sort(config);
         list.ShouldBe(["Apple", "Banana", "EggPlant", "BombasticSideEye"]);
-        //making unique names for each will be hell
     }
 
     [Fact]
     public void Should_Sort_Ascending_Length_Strings_With_Nulls()
     {
         List<string?> list = [null, "", " ", "a", "ba"];
-        list.SortLength();
+        var config = new SortConfig<string>.Builder().Mode(SortMode.Length).MutateOriginal().Build();
+        list!.Sort(config); //null handled already
         list.ShouldBe([null, "", " ", "a", "ba"]);
     }
 
@@ -34,7 +37,8 @@ public class AscendingTests
     public void Should_Sort_Ascending_Length_Ints()
     {
         List<int> list = [1, 1, 2, 10, 9032, 0, -13];
-        list.SortLength();
+        var config = new SortConfig<int>.Builder().Mode(SortMode.Length).MutateOriginal().Build();
+        list.Sort(config);
         list.ShouldBe([0, 1, 1, 2, 10, -13, 9032]);
     }
 
@@ -42,7 +46,8 @@ public class AscendingTests
     public void Should_Sort_Ascending_Length_Doubles_With_Weird_Values()
     {
         List<double?> list = [null, double.E, double.MaxValue, double.MinValue, double.NaN, 3.5, 2.3, 00002.3];
-        list.SortLength();
+        var config = new SortConfig<double?>.Builder().Mode(SortMode.Length).MutateOriginal().Build();
+        list.Sort(config);
         list.ShouldBe([null, 2.3, 00002.3, 3.5, double.NaN, double.E, double.MaxValue, double.MinValue]);
     }
 
@@ -54,14 +59,15 @@ public class AscendingTests
         var obj3 = new TestClass("Banana", -1, new TestClass2(5));
         var obj4 = new TestClass("BombasticSideEye", 10, new TestClass2(4));
         List<TestClass> list = [obj, obj2, obj3, obj4];
-        var config = new SortConfig<TestClass>.Builder().SortBy("Name").Build();
-        var config2 = new SortConfig<TestClass>.Builder().SortBy("Age").Build();
-        var config3 = new SortConfig<TestClass>.Builder().SortBy("TestClass2.Number").Build();
-        list.SortLength(config);
+        var config = new SortConfig<TestClass>.Builder().SortBy("Name").MutateOriginal().Mode(SortMode.Length).Build();
+        var config2 = new SortConfig<TestClass>.Builder().SortBy("Age").MutateOriginal().Mode(SortMode.Length).Build();
+        var config3 = new SortConfig<TestClass>.Builder().SortBy("TestClass2.Number").MutateOriginal()
+            .Mode(SortMode.Length).Build();
+        list.Sort(config);
         list.ShouldBe([obj, obj3, obj2, obj4]);
-        list.SortLength(config2);
+        list.Sort(config2);
         list.ShouldBe([obj2, obj, obj3, obj4]);
-        list.SortLength(config3);
+        list.Sort(config3);
         list.ShouldBe([obj, obj2, obj4, obj3]);
     }
 
@@ -73,8 +79,9 @@ public class AscendingTests
         var obj3 = new TestClass("Banana", -1, new TestClass2(5));
         var obj4 = new TestClass("BombasticSideEye", 10, new TestClass2(4));
         List<TestClass> list = [obj, obj2, obj3, obj4];
-        var config = new SortConfig<TestClass>.Builder().SortBy("Name.Name").Build();
-        Should.Throw<ArgumentException>(() => list.SortLength(config));
+        var config = new SortConfig<TestClass>.Builder().MutateOriginal().SortBy("Name.Name").Mode(SortMode.Length)
+            .Build();
+        Should.Throw<ArgumentException>(() => list.Sort(config));
     }
 
     [Fact]
@@ -85,8 +92,9 @@ public class AscendingTests
         var obj3 = new TestClass("Banana", -1, new TestClass2(5));
         var obj4 = new TestClass("BombasticSideEye", 10, new TestClass2(4));
         List<TestClass> list = [obj, obj2, obj3, obj4];
-        var config = new SortConfig<TestClass>.Builder().SortBy("Name.Name.Name").Build();
-        Should.Throw<ArgumentException>(() => list.SortLength(config));
+        var config = new SortConfig<TestClass>.Builder().MutateOriginal().SortBy("Name.Name.Name").Mode(SortMode.Length)
+            .Build();
+        Should.Throw<ArgumentException>(() => list.Sort(config));
     }
 
     [Fact]
@@ -97,19 +105,20 @@ public class AscendingTests
         var obj3 = new TestClass("Banana", -1, new TestClass2(5));
         var obj4 = new TestClass("BombasticSideEye", 10, new TestClass2(4));
         List<TestClass> list = [obj, obj2, obj3, obj4];
-        Should.Throw<InvalidOperationException>(() => list.SortLength());
+        var config = new SortConfig<TestClass>.Builder().MutateOriginal().Mode(SortMode.Length).Build();
+        Should.Throw<InvalidOperationException>(() => list.Sort(config));
     }
 
     [Fact]
     public void Should_Sort_Primitive_Lambda_Expression()
     {
         List<int> list = [1, 1, 2, 10, 9032, 0, -13];
-        var config = new SortConfig<int>.Builder().SortBy(x => x).Build();
-        list.SortLength(config);
+        var config = new SortConfig<int>.Builder().MutateOriginal().Mode(SortMode.Length).SortBy(x => x).Build();
+        list.Sort(config);
         list.ShouldBe([0, 1, 1, 2, 10, -13, 9032]);
         List<double?> list2 = [null, double.E, double.MaxValue, double.MinValue, double.NaN, 3.5, 2.3, 00002.3];
-        var config2 = new SortConfig<double?>.Builder().SortBy(x => x).Build();
-        list2.SortLength(config2);
+        var config2 = new SortConfig<double?>.Builder().MutateOriginal().Mode(SortMode.Length).SortBy(x => x).Build();
+        list2.Sort(config2);
         list2.ShouldBe([null, 2.3, 00002.3, 3.5, double.NaN, double.E, double.MaxValue, double.MinValue]);
     }
 
@@ -117,8 +126,9 @@ public class AscendingTests
     public void Should_Sort_Primitive_Lambda_Expression_With_Path()
     {
         List<int> list = [1, 1, 2, 10, 9032, 0, -13];
-        var config = new SortConfig<int>.Builder().SortBy("Age").SortBy(x => x).Build();
-        list.SortLength(config);
+        var config = new SortConfig<int>.Builder().MutateOriginal().SortBy("Age").Mode(SortMode.Length).SortBy(x => x)
+            .Build();
+        list.Sort(config);
         list.ShouldBe([0, 1, 1, 2, 10, -13, 9032]);
     }
 
@@ -130,8 +140,9 @@ public class AscendingTests
         var obj3 = new TestClass("Banana", -1, new TestClass2(5));
         var obj4 = new TestClass("BombasticSideEye", 10, new TestClass2(4));
         List<TestClass> list = [obj, obj2, obj3, obj4];
-        var config = new SortConfig<TestClass>.Builder().SortBy(x => x.Name).Build();
-        list.SortLength(config);
+        var config = new SortConfig<TestClass>.Builder().MutateOriginal().Mode(SortMode.Length).SortBy(x => x.Name)
+            .Build();
+        list.Sort(config);
         list.ShouldBe([obj, obj3, obj2, obj4]);
     }
 
@@ -143,8 +154,9 @@ public class AscendingTests
         var obj3 = new TestClass("Banana", -1, new TestClass2(5));
         var obj4 = new TestClass("BombasticSideEye", 10, new TestClass2(4));
         List<TestClass> list = [obj, obj2, obj3, obj4];
-        var config = new SortConfig<TestClass>.Builder().SortBy(x => x.Age).Build();
-        list.SortLength(config);
+        var config = new SortConfig<TestClass>.Builder().MutateOriginal().Mode(SortMode.Length).SortBy(x => x.Age)
+            .Build();
+        list.Sort(config);
         list.ShouldBe([obj2, obj, obj3, obj4]);
     }
 
@@ -156,10 +168,10 @@ public class AscendingTests
         var obj3 = new TestClass("Banana", -1, new TestClass2(5));
         var obj4 = new TestClass("BombasticSideEye", 10, new TestClass2(4));
         List<TestClass> list = [obj, obj2, obj3, obj4];
-        var config = new SortConfig<TestClass>.Builder().SortBy(x => x.TestClass2.Number).Build();
-        config.UsePropertyExpression.ShouldBeTrue();
-        config.UseReflectionPath.ShouldBeFalse();
-        list.SortLength(config);
+        var config = new SortConfig<TestClass>.Builder().MutateOriginal().SortBy(x => x.TestClass2.Number)
+            .Mode(SortMode.Length).Build();
+        config.SortingMethod.ShouldBe(SortingMethods.Lambda);
+        list.Sort(config);
         list.ShouldBe([obj, obj2, obj4, obj3]);
     }
 
@@ -171,11 +183,11 @@ public class AscendingTests
         var obj3 = new TestClass("Banana", -1, new TestClass2(5));
         var obj4 = new TestClass("BombasticSideEye", 10, new TestClass2(4));
         List<TestClass?> list = [obj, obj2, obj3, obj4];
-        var config = new SortConfig<TestClass?>.Builder().SortBy(x => x).SortBy("TestClass2.Number")
+        var config = new SortConfig<TestClass?>.Builder().MutateOriginal().SortBy(x => x).Mode(SortMode.Length)
+            .SortBy("TestClass2.Number")
             .Build();
-        config.UsePropertyExpression.ShouldBeFalse();
-        config.UseReflectionPath.ShouldBeTrue();
-        list.SortLength(config);
+        config.SortingMethod.ShouldBe(SortingMethods.Reflection);
+        list.Sort(config);
         list.ShouldBe([obj, obj2, obj4, obj3]);
     }
 

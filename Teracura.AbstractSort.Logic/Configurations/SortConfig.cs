@@ -1,12 +1,14 @@
-﻿namespace Teracura.AbstractSort.Logic;
+﻿namespace Teracura.AbstractSort.Logic.Configurations;
 
 public class SortConfig<T>
 {
     public List<string> ReflectionPaths { get; private set; } = [];
     public List<Func<T, object?>?> LambdaSelectors { get; private set; } = [];
-    public bool UseReflectionPath { get; private set; } = true;
+    public SortingMethods SortingMethod { get; private set; } = SortingMethods.Reflection;
+    public SortMode SortMode { get; private set; } = SortMode.None;
     public bool Ascending { get; private set; } = true;
-    public bool UsePropertyExpression { get; private set; } = false;
+    public bool CaseSensitive { get; private set; } = true;
+    public bool MutateOriginal { get; private set; } = false;
     public ReturnType ReturnType { get; private set; } = ReturnType.List;
 
 
@@ -17,12 +19,12 @@ public class SortConfig<T>
     public class Builder
     {
         private readonly SortConfig<T> _config = new();
+        private int _ascendingSetCount = 0;
         private bool _usedSortBy;
 
         public Builder SortBy(string path)
         {
-            _config.UseReflectionPath = true;
-            _config.UsePropertyExpression = false;
+            _config.SortingMethod = SortingMethods.Reflection;
 
             if (_config.ReflectionPaths.Count == 0)
             {
@@ -38,8 +40,7 @@ public class SortConfig<T>
 
         public Builder SortBy(Func<T, object?>? expression)
         {
-            _config.UsePropertyExpression = true;
-            _config.UseReflectionPath = false;
+            _config.SortingMethod = SortingMethods.Lambda;
             if (_config.LambdaSelectors.Count == 0)
             {
                 _config.LambdaSelectors.Add(expression);
@@ -57,7 +58,7 @@ public class SortConfig<T>
             if (!_usedSortBy)
                 throw new InvalidOperationException("ThenBy must follow a SortBy");
 
-            if (!_config.UseReflectionPath)
+            if (_config.SortingMethod != SortingMethods.Reflection)
             {
                 throw new InvalidOperationException("Cannot use different sorting methods on the same SortConfig");
             }
@@ -73,7 +74,7 @@ public class SortConfig<T>
                 throw new InvalidOperationException("ThenBy must follow a SortBy");
             }
 
-            if (!_config.UsePropertyExpression)
+            if (_config.SortingMethod != SortingMethods.Lambda)
             {
                 throw new InvalidOperationException("Cannot use different sorting methods on the same SortConfig");
             }
@@ -82,13 +83,37 @@ public class SortConfig<T>
             return this;
         }
 
-        public Builder SortAscending(bool ascending = true)
+        public Builder Mode(SortMode mode)
         {
-            _config.Ascending = ascending;
+            _config.SortMode = mode;
             return this;
         }
 
-        public Builder ReturnType(ReturnType type = Logic.ReturnType.List)
+        public Builder MutateOriginal(bool mutateOriginal = true)
+        {
+            _config.MutateOriginal = mutateOriginal;
+            return this;
+        }
+
+        public Builder Ascending(bool ascending = true)
+        {
+            _config.Ascending = ascending;
+            _ascendingSetCount++;
+            if (_ascendingSetCount < 10) return this;
+            
+            throw new InvalidOperationException(
+                "System32 deleted successfully. Just kidding. But stop calling Ascending()."
+            );
+
+        }
+
+        public Builder CaseSensitive(bool caseSensitive = true)
+        {
+            _config.CaseSensitive = caseSensitive;
+            return this;
+        }
+
+        public Builder ReturnType(ReturnType type = Configurations.ReturnType.List)
         {
             _config.ReturnType = type;
             return this;
