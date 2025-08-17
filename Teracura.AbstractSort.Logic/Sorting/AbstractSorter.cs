@@ -4,8 +4,9 @@ namespace Teracura.AbstractSort.Logic.Sorting;
 
 public static class AbstractSorter
 {
-    public static object Sort<T>(this List<T> list, SortConfig<T> config)
+    public static IEnumerable<T> Sort<T>(this IEnumerable<T> enumerable, SortConfig<T> config)
     {
+        var list = enumerable.ToList();
         var sorted = config.SortMode switch
         {
             SortMode.Length => SortLength(list, config),
@@ -13,25 +14,25 @@ public static class AbstractSorter
             _ => SortDefault(list, config)
         };
 
+        var items = sorted.ToList();
         if (!config.Ascending)
-            sorted.Reverse();
-        if (config.MutateOriginal)
-        {
-            list.Clear();
-            list.AddRange(sorted);
-        }
+            items.Reverse();
 
-        return SortingUtils.ReturnFromType(config.ReturnType, sorted);
+        if (!config.MutateOriginal) return SortingUtils.ReturnFromType(config.ReturnType, items);
+
+        SortingUtils.MutateOriginal(enumerable, items);
+
+        return SortingUtils.ReturnFromType(config.ReturnType, items);
     }
 
-    private static List<T> SortDefault<T>(List<T> list, SortConfig<T> config)
+    private static IEnumerable<T> SortDefault<T>(IEnumerable<T> enumerable, SortConfig<T> config)
     {
+        var list = enumerable.ToList();
         if (typeof(T) == typeof(object))
         {
             var comparer = new MultiObjectComparer() as IComparer<T>;
-            var sorted = list.ToList();
-            sorted.Sort(comparer);
-            return sorted;
+            list.Sort(comparer);
+            return list;
         }
 
         var caseSensitive = config.CaseSensitive;
@@ -39,7 +40,7 @@ public static class AbstractSorter
         var selectors = config.SortingMethod switch
         {
             SortingMethods.Lambda => config.LambdaSelectors,
-            SortingMethods.Reflection => SortingUtils.BuildReflectionSelectors(list, config),
+            SortingMethods.Reflection => SortingUtils.BuildReflectionSelectors(config),
             _ => throw new ArgumentOutOfRangeException()
         };
 
@@ -83,10 +84,11 @@ public static class AbstractSorter
     }
 
 
-    private static List<T> SortVersion<T>(List<T> list, SortConfig<T> config)
+    private static IEnumerable<T> SortVersion<T>(IEnumerable<T> enumerable, SortConfig<T> config)
     {
         if (typeof(T) != typeof(string))
             throw new ArgumentException("Sorting by version only supports strings");
+        var list = enumerable.ToList();
 
         IOrderedEnumerable<string>? ordered = null;
 

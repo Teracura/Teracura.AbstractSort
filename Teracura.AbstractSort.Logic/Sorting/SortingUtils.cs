@@ -1,4 +1,5 @@
-﻿using Teracura.AbstractSort.Logic.Configurations;
+﻿using System.Reflection;
+using Teracura.AbstractSort.Logic.Configurations;
 
 namespace Teracura.AbstractSort.Logic.Sorting;
 
@@ -44,7 +45,7 @@ internal static class SortingUtils
         var selectors = config.SortingMethod switch
         {
             SortingMethods.Lambda => config.LambdaSelectors,
-            SortingMethods.Reflection => BuildReflectionSelectors(list, config),
+            SortingMethods.Reflection => BuildReflectionSelectors(config),
             _ => throw new ArgumentOutOfRangeException()
         };
 
@@ -63,12 +64,12 @@ internal static class SortingUtils
         return ordered.ToList();
     }
 
-    internal static List<Func<T, object?>?> BuildReflectionSelectors<T>(List<T> list, SortConfig<T> config)
+    internal static List<Func<T, object?>?> BuildReflectionSelectors<T>(SortConfig<T> config)
     {
         if (config.ReflectionPaths.Count != 0)
         {
             return config.ReflectionPaths
-                .Select(path => (Func<T, object?>)(x => GetPropertyValue(x, path)))
+                .Select(path => (Func<T, object?>)(x => GetPropertyValue(x, path, config.AllowPrivateAccess)))
                 .Cast<Func<T, object?>?>()
                 .ToList();
         }
@@ -78,32 +79,72 @@ internal static class SortingUtils
         return [x => x];
     }
 
-    private static object? GetPropertyValue(object? obj, string propertyPath)
+    private static object? GetPropertyValue(object? obj, string propertyPath, bool allowPrivateAccess)
     {
         if (obj == null) return null;
 
         var parts = propertyPath.Split('.');
         var current = obj;
+        
+        var bindingFlags = BindingFlags.Instance | BindingFlags.Public;
+        if (allowPrivateAccess)
+        {
+            bindingFlags |= BindingFlags.NonPublic;
+        }
 
         foreach (var part in parts)
         {
             if (current == null) return null;
+            var type = current.GetType();
+            var prop = type.GetProperty(part, bindingFlags);
+            if (prop != null)
+            {
+                current = prop.GetValue(current);
+                continue;
+            }
 
-            var prop = current.GetType().GetProperty(part);
-            if (prop == null)
-                throw new ArgumentException($"Property '{part}' not found on type '{current.GetType().Name}'");
+            var field = type.GetField(part, bindingFlags);
 
-            current = prop.GetValue(current);
+            if (field != null)
+            {
+                current = field.GetValue(current);
+                continue;
+            }
+
+            var defaultMembers = type.GetDefaultMembers();
+            var indexer = defaultMembers
+                .OfType<PropertyInfo>()
+                .FirstOrDefault(p => p.GetIndexParameters().Length == 1);
+
+            if (indexer != null)
+            {
+                var indexParams = indexer.GetIndexParameters();
+                var indexType = indexParams[0].ParameterType;
+
+                object? indexValue = null;
+                if (indexType == typeof(int) && int.TryParse(part, out var i))
+                    indexValue = i;
+                else if (indexType == typeof(string))
+                    indexValue = part;
+
+                if (indexValue != null)
+                {
+                    current = indexer.GetValue(current, [indexValue]);
+                    continue;
+                }
+            }
+
+            throw new ArgumentException($"Member '{part}' not found on type '{type.Name}'");
         }
 
         return current;
     }
 
-    internal static object ReturnFromType<T>(ReturnType returnType, List<T> sorted)
+    internal static IEnumerable<T> ReturnFromType<T>(ReturnType returnType, IEnumerable<T> sorted)
     {
         return returnType switch
         {
-            ReturnType.List => sorted,
+            ReturnType.List => sorted.ToList(),
             ReturnType.Queue => new Queue<T>(sorted),
             ReturnType.Stack => new Stack<T>(sorted),
             ReturnType.HashSet => new HashSet<T>(sorted),
@@ -118,5 +159,32 @@ internal static class SortingUtils
         if (index < parts.Length && int.TryParse(parts[index], out var value))
             return value;
         return 0; // Treat missing parts as 0
+    }
+
+    internal static void MutateOriginal<T>(IEnumerable<T> enumerable, List<T> items)
+    {
+        switch (enumerable)
+        {
+            case ICollection<T> coll and not T[]:
+            {
+                coll.Clear();
+                foreach (var item in items)
+                    coll.Add(item);
+                break;
+            }
+            case T[] arr:
+            {
+                var sortedArr = items.ToArray();
+                Array.Copy(sortedArr, arr, arr.Length);
+                break;
+            }
+            default:
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"[AbstractSorter] Warning: Cannot mutate type {enumerable.GetType().Name}, returning new sorted collection instead."
+                );
+                break;
+            }
+        }
     }
 }
