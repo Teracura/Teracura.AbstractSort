@@ -212,3 +212,4 @@ var stack = (Stack<string>)myList.Sort(config);
 * Reflection selectors can access nested properties (`"Address.City.Name"`).
 * When no selector is given for reflection and `T` is not primitive/string, sorting will throw.
 * When sorting is left default and `T` is not primitive/string, it uses the custom comparer provided by the API.
+* even by setting MutateOriginal to true, immutable values won't be mutated.
