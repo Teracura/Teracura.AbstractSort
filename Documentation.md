@@ -3,7 +3,7 @@
 ## Overview
 
 **Teracura.AbstractSort** is a lightweight and extensible sorting utility for .NET that provides a fluent,
-configuration-driven API for sorting collections.  
+configuration-driven API for sorting collections that implement IEnumerable<T>.  
 It supports:
 
 - Sorting by property paths (**Reflection**) or by **Lambda expressions**.
@@ -21,9 +21,9 @@ It supports:
 
 ## Core API
 
-### `AbstractSorter.Sort<T>(this List<T> list, SortConfig<T> config)`
+### `AbstractSorter.Sort<T>(this IEnumerable<T> list, SortConfig<T> config)`
 
-Sorts a `List<T>` according to the provided configuration.
+Sorts an object that implements `IEnumerable<T>` according to the provided configuration.
 
 #### Parameters
 
@@ -64,7 +64,7 @@ var queue = (Queue<Person>)people.Sort(config);
 
 ### 1. Default Sorting
 
-* Uses **MultiObjectComparer** for `List<object>` to handle mixed types with a consistent precedence:
+* Uses **MultiObjectComparer** for `IEnumerable<object>` to handle mixed types with a consistent precedence:
 
     1. null
     2. Numbers (int, long, decimal, float, double)
@@ -130,33 +130,35 @@ It is created via the `SortConfig<T>.Builder` fluent builder.
 
 ### Key Properties
 
-| Property          | Default      | Description                                       |
-|-------------------|--------------|---------------------------------------------------|
-| `ReflectionPaths` | `[]`         | Paths to properties for reflection-based sorting. |
-| `LambdaSelectors` | `[]`         | Lambda selectors for sorting.                     |
-| `SortingMethod`   | `Reflection` | Reflection or Lambda.                             |
-| `SortMode`        | `None`       | Sorting mode (None (default), Length, Version).   |
-| `Ascending`       | `true`       | Sort order.                                       |
-| `CaseSensitive`   | `true`       | Case sensitivity for string comparison.           |
-| `MutateOriginal`  | `false`      | Whether to change original list.                  |
-| `ReturnType`      | `List`       | Return type after sorting.                        |
+| Property             | Default      | Description                                              |
+|----------------------|--------------|----------------------------------------------------------|
+| `ReflectionPaths`    | `[]`         | Paths to properties for reflection-based sorting.        |
+| `LambdaSelectors`    | `[]`         | Lambda selectors for sorting.                            |
+| `SortingMethod`      | `Reflection` | Reflection or Lambda.                                    |
+| `SortMode`           | `None`       | Sorting mode (None (default), Length, Version).          |
+| `Ascending`          | `true`       | Sort order.                                              |
+| `CaseSensitive`      | `true`       | Case sensitivity for string comparison.                  |
+| `MutateOriginal`     | `false`      | Whether to change original list.                         |
+| `ReturnType`         | `List`       | Return type after sorting.                               |
+| `AllowPrivateAccess` | `false`      | allows access to private data when sorting by reflection |
 
 ---
 
 ### Builder API
 
-| Method                               | Description                                                              |
-|--------------------------------------|--------------------------------------------------------------------------|
-| `SortBy(string path)`                | Sets primary sort key via reflection path.                               |
-| `SortBy(Func<T, object?>? selector)` | Sets primary sort key via lambda.                                        |
-| `ThenBy(string path)`                | Adds secondary reflection sort key (requires `SortBy(string)`).          |
-| `ThenBy(Func<T, object?>? selector)` | Adds secondary lambda sort key (requires `SortBy(lambda)`).              |
-| `Mode(SortMode mode)`                | Sets sorting mode.                                                       |
-| `MutateOriginal(bool = true)`        | Enables/disables in-place mutation.                                      |
-| `Ascending(bool = true)`             | Sets ascending/descending order. Throws if called >9 times (Easter egg). |
-| `CaseSensitive(bool = true)`         | Controls string case sensitivity.                                        |
-| `ReturnType(ReturnType type)`        | Sets return type after sorting.                                          |
-| `Build()`                            | Returns a configured `SortConfig<T>`.                                    |
+| Method                                          | Description                                                              |
+|-------------------------------------------------|--------------------------------------------------------------------------|
+| `SortBy(string path)`                           | Sets primary sort key via reflection path.                               |
+| `SortBy(Func<T, object?>? selector)`            | Sets primary sort key via lambda.                                        |
+| `ThenBy(string path)`                           | Adds secondary reflection sort key (requires `SortBy(string)`).          |
+| `ThenBy(Func<T, object?>? selector)`            | Adds secondary lambda sort key (requires `SortBy(lambda)`).              |
+| `Mode(SortMode mode)`                           | Sets sorting mode.                                                       |
+| `MutateOriginal(bool = true)`                   | Enables/disables in-place mutation.                                      |
+| `Ascending(bool = true)`                        | Sets ascending/descending order. Throws if called >9 times (Easter egg). |
+| `CaseSensitive(bool = true)`                    | Controls string case sensitivity.                                        |
+| `ReturnType(ReturnType type)`                   | Sets return type after sorting.                                          |
+| `AllowPrivateAccess(allowPrivateAccess = true)` | allows access to private data when sorting by reflections                |
+| `Build()`                                       | Returns a configured `SortConfig<T>`.                                    |
 
 ---
 
@@ -209,3 +211,4 @@ var stack = (Stack<string>)myList.Sort(config);
 * For `SortMode.Version`, `T` **must** be `string`.
 * Reflection selectors can access nested properties (`"Address.City.Name"`).
 * When no selector is given for reflection and `T` is not primitive/string, sorting will throw.
+* When sorting is left default and `T` is not primitive/string, it uses the custom comparer provided by the API.
