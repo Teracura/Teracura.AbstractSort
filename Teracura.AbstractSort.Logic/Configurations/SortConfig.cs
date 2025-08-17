@@ -9,6 +9,7 @@ public class SortConfig<T>
     public bool Ascending { get; private set; } = true;
     public bool CaseSensitive { get; private set; } = true;
     public bool MutateOriginal { get; private set; } = false;
+    public bool AllowPrivateAccess  { get; private set; } = false;
     public ReturnType ReturnType { get; private set; } = ReturnType.List;
 
 
@@ -92,6 +93,12 @@ public class SortConfig<T>
         public Builder MutateOriginal(bool mutateOriginal = true)
         {
             _config.MutateOriginal = mutateOriginal;
+            return this;
+        }
+
+        public Builder AllowPrivateAccess(bool allowPrivateAccess = true)
+        {
+            _config.AllowPrivateAccess = allowPrivateAccess;
             return this;
         }
 
